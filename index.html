@@ -110,23 +110,46 @@ body {
   border: 1.5px solid rgba(79,109,245,0.2);
   border-radius: 16px; padding: 14px 18px;
   margin-bottom: 20px; display: flex; align-items: center; gap: 14px;
-  box-shadow: var(--glow); transition: all 0.3s;
+  box-shadow: var(--glow); transition: box-shadow 0.4s, transform 0.3s;
   animation: fadeUp 0.5s ease;
 }
 
+.yuta-bar.energy-spike {
+  box-shadow: 0 0 40px rgba(79,109,245,0.6), 0 0 80px rgba(124,58,237,0.3);
+  transform: scale(1.02);
+}
+
 .yuta-avatar {
-  width: 48px; height: 48px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--cursed-blue), var(--cursed-purple));
+  width: 52px; height: 52px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #6b8ffb, #7c3aed);
   display: flex; align-items: center; justify-content: center;
-  font-size: 24px; flex-shrink: 0;
-  box-shadow: 0 0 15px rgba(99,102,241,0.4);
-  animation: pulse 3s ease infinite;
+  flex-shrink: 0; position: relative;
+  box-shadow: 0 0 20px rgba(99,102,241,0.5), 0 0 40px rgba(99,102,241,0.2);
+  animation: avatarBreathe 3s ease-in-out infinite;
+}
+
+.yuta-avatar svg { width: 26px; height: 26px; }
+
+@keyframes avatarBreathe {
+  0%,100% { box-shadow: 0 0 20px rgba(99,102,241,0.5), 0 0 40px rgba(99,102,241,0.2); }
+  50%      { box-shadow: 0 0 35px rgba(99,102,241,0.8), 0 0 70px rgba(124,58,237,0.4); }
+}
+
+[data-theme="light"] .yuta-avatar {
+  background: radial-gradient(circle at 35% 35%, #fbbf24, #f59e0b);
+  animation: avatarBreatheGold 3s ease-in-out infinite;
+}
+
+@keyframes avatarBreatheGold {
+  0%,100% { box-shadow: 0 0 20px rgba(245,158,11,0.5), 0 0 40px rgba(245,158,11,0.2); }
+  50%      { box-shadow: 0 0 35px rgba(245,158,11,0.9), 0 0 70px rgba(251,191,36,0.4); }
 }
 
 .yuta-text { flex: 1; min-width: 0; }
-.yuta-text .name { font-size: 11px; font-weight: 700; color: var(--cursed-blue); letter-spacing: 1px; text-transform: uppercase; }
-.yuta-text .quote { font-size: 13px; line-height: 1.5; margin-top: 2px; }
-.yuta-text .quote-sub { font-size: 11px; opacity: 0.5; margin-top: 4px; line-height: 1.4; }
+.yuta-text .name { font-size: 10px; font-weight: 700; color: var(--cursed-blue); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.yuta-text .quote-jp { font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 14px; font-weight: 700; line-height: 1.5; color: var(--text); }
+.yuta-text .quote-cn { font-family: 'Noto Sans SC', sans-serif; font-size: 12px; opacity: 0.6; margin-top: 3px; line-height: 1.4; }
+.yuta-text .quote-en { font-size: 11px; opacity: 0.4; margin-top: 2px; line-height: 1.4; }
 
 /* ─── Progress Ring ─── */
 .progress-section {
@@ -318,47 +341,85 @@ body {
 .domain-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   z-index: 9999; display: none; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.95);
+  background: #000;
 }
-
 .domain-overlay.active { display: flex; }
 
-.domain-content {
-  text-align: center; padding: 40px 24px;
-  animation: domainExpand 1.2s ease;
+#domainCanvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
 }
 
-.domain-title {
-  font-size: 14px; letter-spacing: 6px; text-transform: uppercase;
-  color: var(--cursed-blue); margin-bottom: 16px; font-weight: 700;
-  text-shadow: 0 0 30px rgba(99,102,241,0.8);
-  animation: flicker 2s ease infinite;
+.domain-content {
+  position: relative; z-index: 2;
+  text-align: center; padding: 40px 24px;
+  opacity: 0; transition: opacity 0.5s;
 }
+.domain-content.visible { opacity: 1; }
+
+.domain-announce {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 48px; font-weight: 700; letter-spacing: 8px;
+  color: #fff; margin-bottom: 20px;
+  text-shadow: 0 0 40px rgba(99,102,241,1), 0 0 80px rgba(99,102,241,0.5);
+  opacity: 0; transform: scale(2.5) translateY(-10px); filter: blur(8px);
+  transition: opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease;
+}
+.domain-announce.snap { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
 
 .domain-main {
-  font-size: 36px; font-weight: 800; margin-bottom: 8px;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 32px; font-weight: 800; margin-bottom: 12px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899, #6366f1);
   background-size: 300% 300%;
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: gradientShift 3s ease infinite;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s;
 }
+.domain-main.show { opacity: 1; transform: translateY(0); }
 
-.domain-sub {
-  font-size: 16px; opacity: 0.8; margin-bottom: 8px; color: #e8e8f0;
+.domain-sub-jp {
+  font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 17px;
+  color: #a5b4fc; margin-bottom: 6px;
+  text-shadow: 0 0 20px rgba(99,102,241,0.5);
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
 }
-
-.domain-sub-jp { font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 18px; color: var(--cursed-blue); margin-bottom: 4px; text-shadow: 0 0 20px rgba(99,102,241,0.5); }
-.domain-sub-cn { font-family: 'Noto Sans SC', sans-serif; font-size: 16px; opacity: 0.6; margin-bottom: 4px; color: #c4b5fd; }
-.domain-sub-en { font-size: 14px; opacity: 0.5; margin-bottom: 24px; color: #e8e8f0; }
+.domain-sub-cn {
+  font-family: 'Noto Sans SC', sans-serif; font-size: 14px;
+  opacity: 0; color: #c4b5fd; margin-bottom: 4px;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease 0.35s, transform 0.4s ease 0.35s;
+}
+.domain-sub-en {
+  font-size: 12px; color: rgba(232,232,240,0.45); margin-bottom: 28px;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.4s ease 0.5s, transform 0.4s ease 0.5s;
+}
+.domain-sub-jp.show, .domain-sub-cn.show, .domain-sub-en.show {
+  opacity: 1; transform: translateY(0);
+}
+.domain-sub-cn.show { opacity: 0.65; }
 
 .domain-close {
-  padding: 12px 32px; border-radius: 99px; border: 2px solid var(--cursed-blue);
-  background: transparent; color: var(--cursed-blue); font-family: inherit;
-  font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s;
-  letter-spacing: 2px; text-transform: uppercase;
+  padding: 12px 28px; border-radius: 50px;
+  border: 1.5px solid rgba(99,102,241,0.6);
+  background: rgba(99,102,241,0.08); color: #a5b4fc;
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  letter-spacing: 3px;
+  box-shadow: 0 0 20px rgba(99,102,241,0.2), inset 0 0 20px rgba(99,102,241,0.05);
+  transition: all 0.3s;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.4s ease 0.65s, transform 0.4s ease 0.65s, background 0.3s, box-shadow 0.3s;
 }
-.domain-close:hover { background: var(--cursed-blue); color: #fff; }
+.domain-close.show { opacity: 1; transform: translateY(0); }
+.domain-close:hover {
+  background: rgba(99,102,241,0.25);
+  box-shadow: 0 0 30px rgba(99,102,241,0.5);
+}
 
 /* ─── Animations ─── */
 @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
@@ -369,7 +430,7 @@ body {
 @keyframes gradientShift { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
 
 /* ─── Particle Canvas ─── */
-#particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; opacity:0.4; }
+#particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
 body > *:not(#particles) { position:relative; z-index:1; }
 
 /* ─── Black Flash ─── */
@@ -414,11 +475,20 @@ body > *:not(#particles) { position:relative; z-index:1; }
 </div>
 
 <div class="yuta-bar" id="yutaBar">
-  <div class="yuta-avatar">⚡</div>
+  <div class="yuta-avatar">
+    <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="13" y1="3" x2="13" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="9" y1="12" x2="17" y2="12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="13" cy="21.5" r="1.5" fill="white" opacity="0.7"/>
+      <line x1="13" y1="1" x2="11" y2="4" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+      <line x1="13" y1="1" x2="15" y2="4" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+    </svg>
+  </div>
   <div class="yuta-text">
-    <div class="name">Yuta</div>
-    <div class="quote" id="yutaQuote"></div>
-    <div class="quote-sub" id="yutaSub"></div>
+    <div class="name">Okkotsu Yuta · 乙骨憂太</div>
+    <div class="quote-jp" id="yutaQuoteJp"></div>
+    <div class="quote-cn" id="yutaQuoteCn"></div>
+    <div class="quote-en" id="yutaQuoteEn"></div>
   </div>
 </div>
 
@@ -441,14 +511,14 @@ body > *:not(#particles) { position:relative; z-index:1; }
 <div id="content"></div>
 
 <div class="domain-overlay" id="domainOverlay">
-  <div class="domain-content">
-    <div class="domain-title">— Domain Expansion —</div>
+  <canvas id="domainCanvas"></canvas>
+  <div class="domain-content" id="domainContent">
+    <div class="domain-announce" id="domainAnnounce">領域展開</div>
     <div class="domain-main" id="domainMain">完全勝利</div>
-    <div class="domain-sub-jp" id="domainJp">今日の全てのタスクを完了した！</div>
-    <div class="domain-sub-cn" id="domainCn">今天的所有任务都完成了！</div>
-    <div class="domain-sub-en" id="domainEn">All tasks complete. You've expanded your domain today.</div>
-    <br>
-    <button class="domain-close" onclick="closeDomain()">Continue</button>
+    <div class="domain-sub-jp" id="domainJp"></div>
+    <div class="domain-sub-cn" id="domainCn"></div>
+    <div class="domain-sub-en" id="domainEn"></div>
+    <button class="domain-close" id="domainCloseBtn" onclick="closeDomain()">— 縛りの誓い —</button>
   </div>
 </div>
 
@@ -626,18 +696,19 @@ function updateThemeBtn(){
 }
 
 // ─── Yuta ───
-function setYutaQuote(){
-  const q=YUTA_QUOTES[Math.floor(Math.random()*YUTA_QUOTES.length)];
-  document.getElementById('yutaQuote').textContent=q.en;
-  document.getElementById('yutaSub').innerHTML=`<span style="font-family:'Zen Kaku Gothic New'">${q.jp}</span><br><span style="font-family:'Noto Sans SC'">${q.cn}</span>`;
+function setYutaQuote(quotes){
+  const pool=quotes||YUTA_QUOTES;
+  const q=pool[Math.floor(Math.random()*pool.length)];
+  document.getElementById('yutaQuoteJp').textContent=q.jp;
+  document.getElementById('yutaQuoteCn').textContent=q.cn;
+  document.getElementById('yutaQuoteEn').textContent=q.en;
 }
 
 function showTaskCheer(){
-  const q=TASK_CHEERS[Math.floor(Math.random()*TASK_CHEERS.length)];
-  document.getElementById('yutaQuote').textContent=q.en;
-  document.getElementById('yutaSub').innerHTML=`<span style="font-family:'Zen Kaku Gothic New'">${q.jp}</span> · <span style="font-family:'Noto Sans SC'">${q.cn}</span>`;
+  setYutaQuote(TASK_CHEERS);
   const bar=document.getElementById('yutaBar');
-  bar.style.transform='scale(1.02)';setTimeout(()=>bar.style.transform='',300);
+  bar.classList.add('energy-spike');
+  setTimeout(()=>bar.classList.remove('energy-spike'),1200);
 }
 
 // ─── Progress ───
@@ -650,8 +721,24 @@ function updateProgress(){
   const circ=175.9;
   const offset=circ-(circ*pct/100);
   document.getElementById('progressRing').style.strokeDashoffset=offset;
+
+  let grade='Unranked';
+  let gradeColor='var(--text-muted)';
+  if(pct>=100){grade='Special Grade ✦';gradeColor='#ec4899';}
+  else if(pct>=75){grade='Grade 1';gradeColor='#7c3aed';}
+  else if(pct>=50){grade='Grade 2';gradeColor='#4f6df5';}
+  else if(pct>=25){grade='Grade 4';gradeColor='var(--text-muted)';}
+
   document.getElementById('progressPct').textContent=pct+'%';
-  document.getElementById('progressDetail').textContent=done+'/'+total+' tasks complete'+(pct===100?' — DOMAIN EXPANDED!' : '');
+  document.getElementById('progressPct').style.color=gradeColor;
+  document.getElementById('progressDetail').innerHTML=`${done}/${total} tasks &nbsp;·&nbsp; <span style="color:${gradeColor};font-weight:700">${grade}</span>`;
+
+  const ring=document.getElementById('progressRing');
+  if(pct>=100){ring.style.filter='drop-shadow(0 0 6px #ec4899)';}
+  else if(pct>=75){ring.style.filter='drop-shadow(0 0 5px #7c3aed)';}
+  else if(pct>=50){ring.style.filter='drop-shadow(0 0 4px #4f6df5)';}
+  else{ring.style.filter='';}
+
   if(pct===100&&done>0)triggerDomain();
 }
 
@@ -661,10 +748,200 @@ function triggerDomain(){
   document.getElementById('domainJp').textContent=msg.jp;
   document.getElementById('domainCn').textContent=msg.cn;
   document.getElementById('domainEn').textContent=msg.en;
-  document.getElementById('domainOverlay').classList.add('active');
+
+  // Reset state
+  const overlay=document.getElementById('domainOverlay');
+  const content=document.getElementById('domainContent');
+  const announce=document.getElementById('domainAnnounce');
+  const main=document.getElementById('domainMain');
+  const jp=document.getElementById('domainJp');
+  const cn=document.getElementById('domainCn');
+  const en=document.getElementById('domainEn');
+  const closeBtn=document.getElementById('domainCloseBtn');
+  [content,announce,main,jp,cn,en,closeBtn].forEach(el=>{
+    el.classList.remove('visible','snap','show');
+  });
+
+  overlay.classList.add('active');
+
+  // Phase 1 — geometric rings draw from center (0–500ms)
+  const canvas=document.getElementById('domainCanvas');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  const ctx=canvas.getContext('2d');
+  const cx=canvas.width/2, cy=canvas.height/2;
+  const maxR=Math.hypot(cx,cy)*1.1;
+  const t0=performance.now();
+  const phase1Dur=500, phase2Dur=1000;
+
+  function drawRings(now){
+    const t=Math.min((now-t0)/phase1Dur,1);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Void background fills in
+    ctx.fillStyle=`rgba(0,0,0,${t*0.6})`;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Concentric rings drawing outward
+    const numRings=6;
+    for(let r=0;r<numRings;r++){
+      const ringR=(maxR*(r+1)/numRings)*t;
+      const alpha=(1-(r/numRings))*0.4*t;
+      ctx.beginPath();
+      ctx.arc(cx,cy,ringR,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(99,102,241,${alpha})`;
+      ctx.lineWidth=1;
+      ctx.stroke();
+    }
+
+    // Radial lines tracing outward
+    const numLines=12;
+    for(let l=0;l<numLines;l++){
+      const angle=(Math.PI*2*l/numLines);
+      const len=maxR*t;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(angle)*len, cy+Math.sin(angle)*len);
+      ctx.strokeStyle=`rgba(79,109,245,${0.15*t})`;
+      ctx.lineWidth=0.5;
+      ctx.stroke();
+    }
+
+    if(t<1){requestAnimationFrame(drawRings);}
+    else{startPhase2(now);}
+  }
+  requestAnimationFrame(drawRings);
+
+  // Phase 2 — void forms with energy streams (500–1500ms)
+  function startPhase2(startNow){
+    const t2=performance.now();
+    const streams=Array.from({length:18},()=>({
+      angle:Math.random()*Math.PI*2,
+      speed:0.4+Math.random()*0.6,
+      length:0.3+Math.random()*0.5,
+      alpha:0.2+Math.random()*0.4,
+      offset:Math.random(),
+    }));
+
+    function drawPhase2(now){
+      const t=Math.min((now-t2)/phase2Dur,1);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // Deep void bg
+      const bgGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,maxR);
+      bgGrad.addColorStop(0,`rgba(12,8,30,${0.85+t*0.1})`);
+      bgGrad.addColorStop(0.5,`rgba(5,3,18,0.97)`);
+      bgGrad.addColorStop(1,'rgba(0,0,0,1)');
+      ctx.fillStyle=bgGrad;
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      // Concentric rings (settled)
+      const numRings=6;
+      for(let r=0;r<numRings;r++){
+        const ringR=maxR*(r+1)/numRings;
+        const alpha=(1-(r/numRings))*0.25;
+        ctx.beginPath();
+        ctx.arc(cx,cy,ringR,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(99,102,241,${alpha})`;
+        ctx.lineWidth=1;
+        ctx.stroke();
+      }
+
+      // Energy streams flowing outward
+      streams.forEach(s=>{
+        const phase=(t*s.speed+s.offset)%1;
+        const startR=maxR*phase*0.9;
+        const endR=Math.min(startR+maxR*s.length*0.3, maxR);
+        const sx=cx+Math.cos(s.angle)*startR;
+        const sy=cy+Math.sin(s.angle)*startR;
+        const ex=cx+Math.cos(s.angle)*endR;
+        const ey=cy+Math.sin(s.angle)*endR;
+        const streamGrad=ctx.createLinearGradient(sx,sy,ex,ey);
+        streamGrad.addColorStop(0,'rgba(99,102,241,0)');
+        streamGrad.addColorStop(0.4,`rgba(99,102,241,${s.alpha*t})`);
+        streamGrad.addColorStop(1,'rgba(236,72,153,0)');
+        ctx.beginPath();
+        ctx.moveTo(sx,sy);
+        ctx.lineTo(ex,ey);
+        ctx.strokeStyle=streamGrad;
+        ctx.lineWidth=1.5;
+        ctx.stroke();
+      });
+
+      // Center glow building up
+      const centerGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,80*t);
+      centerGrad.addColorStop(0,`rgba(139,92,246,${0.3*t})`);
+      centerGrad.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=centerGrad;
+      ctx.beginPath();
+      ctx.arc(cx,cy,80*t,0,Math.PI*2);
+      ctx.fill();
+
+      if(t<1){requestAnimationFrame(drawPhase2);}
+      else{startPhase3();}
+    }
+    requestAnimationFrame(drawPhase2);
+  }
+
+  // Phase 3 — kanji snaps in (1500ms+), then text stagger
+  function startPhase3(){
+    content.classList.add('visible');
+    setTimeout(()=>announce.classList.add('snap'),80);
+    setTimeout(()=>main.classList.add('show'),700);
+    setTimeout(()=>jp.classList.add('show'),900);
+    setTimeout(()=>cn.classList.add('show'),1050);
+    setTimeout(()=>en.classList.add('show'),1200);
+    setTimeout(()=>closeBtn.classList.add('show'),1400);
+
+    // Phase 4 — settle canvas to ambient
+    const t4=performance.now();
+    const streams=Array.from({length:14},()=>({
+      angle:Math.random()*Math.PI*2,
+      speed:0.15+Math.random()*0.2,
+      length:0.25+Math.random()*0.4,
+      alpha:0.12+Math.random()*0.2,
+      offset:Math.random(),
+    }));
+    function drawAmbient(now){
+      if(!document.getElementById('domainOverlay').classList.contains('active'))return;
+      const t=Math.min((now-t4)/3000,1);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const bgGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,maxR);
+      bgGrad.addColorStop(0,'rgba(14,10,35,0.95)');
+      bgGrad.addColorStop(1,'rgba(0,0,0,1)');
+      ctx.fillStyle=bgGrad;
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      const numRings=6;
+      for(let r=0;r<numRings;r++){
+        ctx.beginPath();
+        ctx.arc(cx,cy,maxR*(r+1)/numRings,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(99,102,241,${(1-(r/numRings))*0.18})`;
+        ctx.lineWidth=0.8; ctx.stroke();
+      }
+      streams.forEach(s=>{
+        const phase=((now/4000)*s.speed+s.offset)%1;
+        const startR=maxR*phase;
+        const endR=Math.min(startR+maxR*s.length*0.25,maxR);
+        const sx=cx+Math.cos(s.angle)*startR, sy=cy+Math.sin(s.angle)*startR;
+        const ex=cx+Math.cos(s.angle)*endR,   ey=cy+Math.sin(s.angle)*endR;
+        const g=ctx.createLinearGradient(sx,sy,ex,ey);
+        g.addColorStop(0,'rgba(99,102,241,0)');
+        g.addColorStop(0.5,`rgba(99,102,241,${s.alpha})`);
+        g.addColorStop(1,'rgba(236,72,153,0)');
+        ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);
+        ctx.strokeStyle=g;ctx.lineWidth=1;ctx.stroke();
+      });
+      requestAnimationFrame(drawAmbient);
+    }
+    requestAnimationFrame(drawAmbient);
+  }
 }
 
-function closeDomain(){document.getElementById('domainOverlay').classList.remove('active');}
+function closeDomain(){
+  document.getElementById('domainOverlay').classList.remove('active');
+  const ctx=document.getElementById('domainCanvas').getContext('2d');
+  ctx.clearRect(0,0,document.getElementById('domainCanvas').width,document.getElementById('domainCanvas').height);
+}
 
 // ─── Render ───
 function renderTabs(){
@@ -888,41 +1165,92 @@ function calcScreenTime(){
   else r.innerHTML=`🤝 <strong>Tie!</strong> Both at ${g} min — you're in sync`;
 }
 
-// ─── Particles ───
+// ─── Cursed Energy Wisps ───
+let _particleAnimId=null;
 function initParticles(){
+  if(_particleAnimId)cancelAnimationFrame(_particleAnimId);
   const canvas=document.getElementById('particles');
   const ctx=canvas.getContext('2d');
   canvas.width=window.innerWidth;
   canvas.height=window.innerHeight;
-  const isDark=document.body.dataset.theme==='dark';
-  const particles=[];
-  const count=30;
+  const isDark=document.body.dataset.theme!=='light';
+  const W=canvas.width, H=canvas.height;
 
-  for(let i=0;i<count;i++){
-    particles.push({
-      x:Math.random()*canvas.width,
-      y:Math.random()*canvas.height,
-      r:Math.random()*2+0.5,
-      dx:(Math.random()-0.5)*0.3,
-      dy:(Math.random()-0.5)*0.3,
-      alpha:Math.random()*0.5+0.1,
-    });
+  // Each wisp is a bezier curve segment that drifts upward
+  const count=isDark?22:16;
+  const wisps=Array.from({length:count},()=>createWisp(W,H,isDark,true));
+
+  function createWisp(W,H,dark,randomY){
+    const x=Math.random()*W;
+    const y=randomY?(Math.random()*H):(H+20);
+    const len=40+Math.random()*80;
+    const wobble=(Math.random()-0.5)*60;
+    const speed=0.3+Math.random()*0.5;
+    const alpha=dark?(0.15+Math.random()*0.25):(0.12+Math.random()*0.18);
+    const hue=dark?(220+Math.random()*60):(35+Math.random()*25); // blue-purple or gold
+    const width=0.8+Math.random()*1.4;
+    return {x,y,len,wobble,speed,alpha,hue,width,life:Math.random()};
   }
 
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    particles.forEach(p=>{
+  function draw(now){
+    ctx.clearRect(0,0,W,H);
+
+    // Faint radial glow at center (energy source)
+    if(isDark){
+      const cg=ctx.createRadialGradient(W/2,H*0.45,0,W/2,H*0.45,W*0.4);
+      cg.addColorStop(0,'rgba(79,109,245,0.04)');
+      cg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=cg; ctx.fillRect(0,0,W,H);
+    }
+
+    wisps.forEach((w,idx)=>{
+      w.y-=w.speed;
+      w.life+=w.speed/H;
+
+      // Fade in at bottom, fade out at top
+      const fadeIn=Math.min(w.life*8,1);
+      const fadeOut=Math.max(0,1-Math.max(0,(H-w.y-60)/100));
+      const a=w.alpha*fadeIn*(1-fadeOut);
+
+      if(w.y+w.len<0||a<=0){
+        wisps[idx]=createWisp(W,H,isDark,false);
+        return;
+      }
+
+      const wobbleX=Math.sin(now*0.0008+idx*1.3)*w.wobble;
+      const x0=w.x+wobbleX*0.3;
+      const y0=w.y+w.len;
+      const cp1x=x0+wobbleX*0.5;
+      const cp1y=y0-w.len*0.4;
+      const cp2x=x0+wobbleX;
+      const cp2y=y0-w.len*0.75;
+      const x1=x0+wobbleX*1.2;
+      const y1=w.y;
+
+      const grad=ctx.createLinearGradient(x0,y0,x1,y1);
+      if(isDark){
+        grad.addColorStop(0,`hsla(${w.hue},80%,65%,0)`);
+        grad.addColorStop(0.3,`hsla(${w.hue},80%,65%,${a})`);
+        grad.addColorStop(0.8,`hsla(${w.hue+20},75%,70%,${a*0.6})`);
+        grad.addColorStop(1,`hsla(${w.hue+40},70%,75%,0)`);
+      } else {
+        grad.addColorStop(0,`hsla(${w.hue},90%,55%,0)`);
+        grad.addColorStop(0.3,`hsla(${w.hue},90%,55%,${a})`);
+        grad.addColorStop(1,`hsla(${w.hue},85%,60%,0)`);
+      }
+
       ctx.beginPath();
-      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=isDark?`rgba(99,102,241,${p.alpha})`:`rgba(99,102,241,${p.alpha*0.5})`;
-      ctx.fill();
-      p.x+=p.dx;p.y+=p.dy;
-      if(p.x<0||p.x>canvas.width)p.dx*=-1;
-      if(p.y<0||p.y>canvas.height)p.dy*=-1;
+      ctx.moveTo(x0,y0);
+      ctx.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,x1,y1);
+      ctx.strokeStyle=grad;
+      ctx.lineWidth=w.width;
+      ctx.lineCap='round';
+      ctx.stroke();
     });
-    requestAnimationFrame(draw);
+
+    _particleAnimId=requestAnimationFrame(draw);
   }
-  draw();
+  _particleAnimId=requestAnimationFrame(draw);
 }
 
 window.addEventListener('resize',()=>{
