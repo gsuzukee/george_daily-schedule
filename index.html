@@ -439,6 +439,94 @@ body {
 #particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
 body > *:not(#particles) { position:relative; z-index:1; }
 
+/* ─── Motivation Tab ─── */
+.motiv-hero {
+  position: relative; border-radius: 20px; overflow: hidden;
+  margin-bottom: 20px; min-height: 320px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  animation: fadeUp 0.5s ease;
+}
+
+.motiv-hero-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  opacity: 0.35;
+}
+
+.motiv-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(5,3,18,0.75) 60%, rgba(5,3,18,0.97) 100%);
+}
+
+.motiv-hero-content {
+  position: relative; z-index: 2; padding: 28px 22px 24px;
+  text-align: center;
+}
+
+.motiv-label {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
+  color: var(--cursed-blue); font-weight: 700; margin-bottom: 16px;
+  text-shadow: 0 0 20px rgba(79,109,245,0.8);
+}
+
+.motiv-mission-jp {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 20px; font-weight: 700; line-height: 1.6;
+  color: #fff; margin-bottom: 8px;
+  text-shadow: 0 0 30px rgba(99,102,241,0.9), 0 0 60px rgba(99,102,241,0.4);
+}
+
+.motiv-mission-cn {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 14px; line-height: 1.6; color: #a5b4fc;
+  margin-bottom: 6px;
+  text-shadow: 0 0 20px rgba(99,102,241,0.6);
+}
+
+.motiv-mission-en {
+  font-size: 12px; color: rgba(232,232,240,0.5); line-height: 1.6;
+  font-style: italic;
+}
+
+.motiv-card {
+  border-radius: 16px; padding: 18px;
+  background: var(--card-bg); border: 1.5px solid var(--card-border);
+  margin-bottom: 10px; animation: fadeUp 0.4s ease both;
+}
+
+.motiv-card-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--cursed-blue);
+  margin-bottom: 10px;
+}
+
+.motiv-card-jp {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-size: 15px; font-weight: 700; line-height: 1.6;
+  color: var(--text); margin-bottom: 6px;
+  text-shadow: 0 0 20px rgba(99,102,241,0.3);
+}
+
+.motiv-card-cn {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 4px;
+}
+
+.motiv-card-en {
+  font-size: 11.5px; color: var(--text-muted); line-height: 1.6; opacity: 0.7;
+}
+
+.motiv-card.blue  { border-color: rgba(79,109,245,0.25);  background: rgba(79,109,245,0.06); }
+.motiv-card.purple{ border-color: rgba(124,58,237,0.25);  background: rgba(124,58,237,0.06); }
+.motiv-card.pink  { border-color: rgba(236,72,153,0.25);  background: rgba(236,72,153,0.06); }
+.motiv-card.green { border-color: rgba(16,185,129,0.25);  background: rgba(16,185,129,0.06); }
+
+.motiv-card.blue  .motiv-card-label { color: var(--cursed-blue); }
+.motiv-card.purple .motiv-card-label { color: #a78bfa; }
+.motiv-card.pink  .motiv-card-label { color: var(--rika-pink); }
+.motiv-card.green .motiv-card-label { color: var(--energy-green); }
+
 /* ─── Black Flash ─── */
 .check-btn-wrap { position:relative; display:inline-flex; align-items:center; justify-content:center; }
 
@@ -526,7 +614,7 @@ body > *:not(#particles) { position:relative; z-index:1; }
 
 <script>
 // ─── Data ───
-const TABS=[{key:"earlyNormal",label:"Early Day"},{key:"earlyClimb",label:"Early + Climb/Dance"},{key:"lateNormal",label:"Late Day"},{key:"lateClimb",label:"Late + Climb/Dance"},{key:"friday",label:"Friday"},{key:"protocols",label:"Rules & Protocols"}];
+const TABS=[{key:"earlyNormal",label:"Early Day"},{key:"earlyClimb",label:"Early + Climb/Dance"},{key:"lateNormal",label:"Late Day"},{key:"lateClimb",label:"Late + Climb/Dance"},{key:"friday",label:"Friday"},{key:"protocols",label:"Rules & Protocols"},{key:"motivation",label:"✦ Motivation"}];
 
 const TYPE_MAP={together:{cls:"type-together",label:"Together"},solo:{cls:"type-solo",label:"Individual"},work:{cls:"type-work",label:"Work"},late:{cls:"type-late",label:"Late Day"},flex:{cls:"type-flex",label:"Activity"}};
 
@@ -1139,6 +1227,50 @@ function toggleCheck(key,i){
 
 function renderContent(){
   const c=document.getElementById('content');
+
+  if(activeTab==='motivation'){
+    document.getElementById('progressSection').style.display='none';
+    c.innerHTML=`
+      <div class="motiv-hero">
+        <img class="motiv-hero-img" src="IMG_0124.jpeg" alt="Yuta">
+        <div class="motiv-hero-overlay"></div>
+        <div class="motiv-hero-content">
+          <div class="motiv-label">縛りの誓い · Binding Vow</div>
+          <div class="motiv-mission-jp">共に成長し、互いの目標を守る。<br>一人も置いていかない。</div>
+          <div class="motiv-mission-cn">共同成长，守护彼此的目标。<br>没有人会被落下。</div>
+          <div class="motiv-mission-en">We grow together. We protect each other's goals.<br>No one gets left behind.</div>
+        </div>
+      </div>
+
+      <div class="motiv-card blue" style="animation-delay:0.05s">
+        <div class="motiv-card-label">⚡ なぜやるのか · Why We Do This</div>
+        <div class="motiv-card-jp">怠惰こそが最強の呪いだ。スマホのスクロールが、僕たちの可能性を奪っていく。毎日現れることが、僕たちの呪術だ。</div>
+        <div class="motiv-card-cn">懒惰是最强的诅咒。刷手机正在一点点偷走我们的潜力。每天坚持出现，就是我们的咒术。</div>
+        <div class="motiv-card-en">Laziness is the strongest curse. Phone scrolling steals our potential one minute at a time. Showing up every day is our cursed technique.</div>
+      </div>
+
+      <div class="motiv-card purple" style="animation-delay:0.1s">
+        <div class="motiv-card-label">🤝 バディシステム · The Buddy System</div>
+        <div class="motiv-card-jp">一人が崩れそうな時、もう一人が静かにリードする。それが僕たちの縛りの誓いだ。どちらかが落ちても、二人で立ち上がる。</div>
+        <div class="motiv-card-cn">当一个人快撑不住时，另一个人默默带路。这就是我们的誓约。一个人倒下，两个人一起站起来。</div>
+        <div class="motiv-card-en">When one starts to fall, the other leads quietly. That's our pact. One stumbles — both rise together.</div>
+      </div>
+
+      <div class="motiv-card pink" style="animation-delay:0.15s">
+        <div class="motiv-card-label">🌸 共に強くなる · Growing Together</div>
+        <div class="motiv-card-jp">Georgeのキャリア成長、Oliviaのエンジニアとしての道。技は違えど、同じ領域を目指している。お互いの夢が、お互いの燃料になる。</div>
+        <div class="motiv-card-cn">George的职业成长，Olivia的工程师之路。技术不同，目标相同。彼此的梦想，成为彼此的燃料。</div>
+        <div class="motiv-card-en">George's career pivot, Olivia's engineering path. Different techniques — same domain. Each other's dreams fuel each other's fire.</div>
+      </div>
+
+      <div class="motiv-card green" style="animation-delay:0.2s">
+        <div class="motiv-card-label">✦ 毎日の勝利 · Daily Victory</div>
+        <div class="motiv-card-jp">時間通りに眠る。夕食を作る。ジムへ行く。これは雑用じゃない——完璧になるまで磨き続ける呪術だ。小さな勝利が、特級への道を作る。</div>
+        <div class="motiv-card-cn">按时睡觉。做晚餐。去健身房。这不是琐事——这是反复磨砺直到完美的咒术。每一个小小的胜利，都铺就通往特级的道路。</div>
+        <div class="motiv-card-en">Sleep on time. Cook dinner. Go to the gym. These aren't chores — they're techniques practiced until perfect. Small victories pave the road to Special Grade.</div>
+      </div>`;
+    return;
+  }
 
   if(activeTab==='protocols'){
     let h='';
