@@ -985,6 +985,9 @@ function toggleNote(i){
 }
 
 function triggerBlackFlash(btn){
+  // Audio
+  try{const a=new Audio('kokusen.m4a');a.volume=1.0;a.play().catch(()=>{});}catch(e){}
+
   // Screen flash
   const screen=document.createElement('div');
   screen.className='bf-screen';
