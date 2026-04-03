@@ -720,9 +720,6 @@ function updateProgress(){
   const total=schedule.length;
   const done=schedule.filter((_,i)=>checkedTasks[activeTab+'_'+i]).length;
   const pct=Math.round((done/total)*100);
-  const circ=175.9;
-  const offset=circ-(circ*pct/100);
-  document.getElementById('progressRing').style.strokeDashoffset=offset;
 
   let grade='Unranked';
   let gradeColor='var(--text-muted)';
