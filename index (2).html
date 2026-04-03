@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>George & Olivia — Daily Blueprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a12;
+  --bg2: #12121f;
+  --bg3: #1a1a2e;
+  --text: #e8e8f0;
+  --text-muted: #8888a8;
+  --cursed-blue: #4f6df5;
+  --cursed-purple: #7c3aed;
+  --cursed-glow: #6366f1;
+  --rika-pink: #ec4899;
+  --energy-green: #10b981;
+  --warning-amber: #f59e0b;
+  --card-bg: rgba(255,255,255,0.04);
+  --card-border: rgba(255,255,255,0.08);
+  --accent: var(--cursed-blue);
+  --glow: 0 0 30px rgba(99,102,241,0.15);
+}
+
+[data-theme="light"] {
+  --bg: #f5f3f0;
+  --bg2: #ebe8e4;
+  --bg3: #ddd9d4;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --card-bg: rgba(255,255,255,0.7);
+  --card-border: rgba(0,0,0,0.08);
+  --glow: 0 0 30px rgba(99,102,241,0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Outfit', 'Zen Kaku Gothic New', 'Noto Sans SC', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 20px 16px 100px;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.4s, color 0.4s;
+  overflow-x: hidden;
+}
+
+/* ─── Header ─── */
+.header { text-align: center; margin-bottom: 24px; }
+
+.header .cursed-label {
+  font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--cursed-blue); font-weight: 700; margin-bottom: 8px;
+  text-shadow: 0 0 20px rgba(79,109,245,0.5);
+}
+
+.header h1 {
+  font-size: 28px; font-weight: 800; margin-bottom: 4px;
+  background: linear-gradient(135deg, var(--cursed-blue), var(--cursed-purple), var(--rika-pink));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header .subtitle {
+  font-size: 13px; opacity: 0.5; line-height: 1.5;
+  max-width: 400px; margin: 0 auto;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle {
+  position: fixed; top: 16px; right: 16px; z-index: 100;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--bg3); border: 1.5px solid var(--card-border);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; transition: all 0.3s;
+  box-shadow: var(--glow);
+}
+.theme-toggle:hover { transform: scale(1.1); }
+
+/* ─── Tabs ─── */
+.tabs {
+  display: flex; gap: 6px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 20px;
+}
+
+.tab {
+  padding: 8px 14px; border-radius: 99px;
+  border: 1.5px solid var(--card-border);
+  background: var(--card-bg); color: var(--text);
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.25s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab:hover { border-color: var(--cursed-blue); }
+
+.tab.active {
+  border-color: var(--cursed-blue);
+  background: var(--cursed-blue); color: #fff;
+  box-shadow: 0 0 20px rgba(79,109,245,0.3);
+}
+
+/* ─── Yuta Companion ─── */
+.yuta-bar {
+  background: linear-gradient(135deg, rgba(79,109,245,0.12), rgba(124,58,237,0.08));
+  border: 1.5px solid rgba(79,109,245,0.2);
+  border-radius: 16px; padding: 14px 18px;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--glow); transition: all 0.3s;
+  animation: fadeUp 0.5s ease;
+}
+
+.yuta-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--cursed-blue), var(--cursed-purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(99,102,241,0.4);
+  animation: pulse 3s ease infinite;
+}
+
+.yuta-text { flex: 1; min-width: 0; }
+.yuta-text .name { font-size: 11px; font-weight: 700; color: var(--cursed-blue); letter-spacing: 1px; text-transform: uppercase; }
+.yuta-text .quote { font-size: 13px; line-height: 1.5; margin-top: 2px; }
+.yuta-text .quote-sub { font-size: 11px; opacity: 0.5; margin-top: 4px; line-height: 1.4; }
+
+/* ─── Progress Ring ─── */
+.progress-section {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--card-bg); border: 1.5px solid var(--card-border);
+  border-radius: 16px; padding: 16px 18px; margin-bottom: 20px;
+  animation: fadeUp 0.5s ease 0.1s both;
+}
+
+.progress-ring-container { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+
+.progress-ring { transform: rotate(-90deg); }
+
+.progress-ring-bg { fill: none; stroke: var(--card-border); stroke-width: 5; }
+.progress-ring-fill {
+  fill: none; stroke: url(#grad); stroke-width: 5;
+  stroke-linecap: round; transition: stroke-dashoffset 0.6s ease;
+}
+
+.progress-pct {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  font-size: 16px; font-weight: 800; color: var(--cursed-blue);
+}
+
+.progress-info { flex: 1; }
+.progress-info .label { font-size: 12px; font-weight: 700; color: var(--cursed-blue); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.progress-info .detail { font-size: 13px; opacity: 0.6; line-height: 1.4; }
+
+/* ─── Schedule Blocks ─── */
+.schedule { display: flex; flex-direction: column; gap: 6px; }
+
+.plan-info {
+  margin-bottom: 14px; padding: 12px 16px; border-radius: 12px;
+  font-size: 13px; line-height: 1.6; animation: fadeUp 0.4s ease;
+  background: var(--card-bg); border: 1.5px solid var(--card-border);
+}
+
+.plan-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; font-size: 12px; }
+.plan-meta .plan-label { font-weight: 700; color: var(--cursed-blue); }
+.plan-meta span { opacity: 0.5; }
+
+.block {
+  border-radius: 14px; padding: 14px 16px;
+  cursor: pointer; transition: all 0.2s;
+  animation: fadeUp 0.4s ease both;
+}
+
+.block:active { transform: scale(0.985); }
+
+.block-header { display: flex; align-items: center; gap: 10px; }
+.block-icon { font-size: 20px; flex-shrink: 0; }
+.block-content { flex: 1; min-width: 0; }
+.block-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
+.block-time { font-size: 11px; font-weight: 700; flex-shrink: 0; }
+
+.block-type {
+  font-size: 9px; padding: 2px 7px; border-radius: 99px;
+  color: #fff; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+}
+
+.block-activity { font-size: 13px; font-weight: 500; line-height: 1.5; }
+.person-label { opacity: 0.5; font-size: 11px; }
+
+.block-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.check-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--card-border); background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: all 0.3s; color: var(--text);
+}
+
+.check-btn.done {
+  border-color: var(--energy-green); background: var(--energy-green); color: #fff;
+  box-shadow: 0 0 12px rgba(16,185,129,0.4);
+  animation: checkPop 0.4s ease;
+}
+
+.block-chevron {
+  font-size: 16px; opacity: 0.25; transition: transform 0.25s; flex-shrink: 0;
+}
+.block-chevron.open { transform: rotate(180deg); }
+
+.block-note {
+  margin-top: 0; padding-top: 0; font-size: 12px; line-height: 1.6;
+  opacity: 0.7; white-space: pre-line;
+  max-height: 0; overflow: hidden; transition: all 0.35s ease;
+}
+
+.block-note.open { max-height: 500px; margin-top: 12px; padding-top: 12px; }
+
+/* ─── Type Colors ─── */
+.type-together { background: rgba(79,109,245,0.08); border: 1.5px solid rgba(79,109,245,0.2); }
+.type-together .block-time { color: var(--cursed-blue); }
+.type-together .block-type { background: var(--cursed-blue); }
+.type-together .block-note { border-top-color: rgba(79,109,245,0.2); }
+
+.type-solo { background: rgba(245,158,11,0.08); border: 1.5px solid rgba(245,158,11,0.2); }
+.type-solo .block-time { color: var(--warning-amber); }
+.type-solo .block-type { background: var(--warning-amber); }
+.type-solo .block-note { border-top-color: rgba(245,158,11,0.2); }
+
+.type-work { background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.06); }
+.type-work .block-time { color: var(--text-muted); }
+.type-work .block-type { background: var(--text-muted); }
+.type-work .block-note { border-top-color: var(--card-border); }
+
+.type-late { background: rgba(124,58,237,0.08); border: 1.5px solid rgba(124,58,237,0.2); }
+.type-late .block-time { color: var(--cursed-purple); }
+.type-late .block-type { background: var(--cursed-purple); }
+.type-late .block-note { border-top-color: rgba(124,58,237,0.2); }
+
+.type-flex { background: rgba(236,72,153,0.08); border: 1.5px solid rgba(236,72,153,0.2); }
+.type-flex .block-time { color: var(--rika-pink); }
+.type-flex .block-type { background: var(--rika-pink); }
+.type-flex .block-note { border-top-color: rgba(236,72,153,0.2); }
+
+/* ─── Rules & Protocols ─── */
+.section-title {
+  font-size: 20px; font-weight: 800; margin: 0 0 8px;
+  color: var(--cursed-blue);
+  text-shadow: 0 0 20px rgba(79,109,245,0.2);
+}
+
+.rule-card {
+  padding: 14px 16px; border-radius: 14px;
+  background: var(--card-bg); border: 1.5px solid var(--card-border);
+  margin-bottom: 8px; animation: fadeUp 0.4s ease both;
+}
+
+.rule-title { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.rule-title .icon { font-size: 20px; }
+.rule-title .name { font-size: 14px; font-weight: 700; }
+
+.rule-desc { font-size: 12.5px; line-height: 1.6; opacity: 0.7; }
+
+.protocol-card {
+  padding: 14px 16px; border-radius: 14px;
+  background: rgba(16,185,129,0.05); border: 1.5px solid rgba(16,185,129,0.15);
+  margin-bottom: 8px; animation: fadeUp 0.4s ease both;
+}
+
+.protocol-steps { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+.protocol-step { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.5; }
+.protocol-step .num { color: var(--energy-green); font-weight: 700; flex-shrink: 0; }
+.protocol-step .text { opacity: 0.7; }
+
+/* ─── Screen Time ─── */
+.screen-time-card {
+  background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(124,58,237,0.08));
+  border: 1.5px solid rgba(236,72,153,0.2);
+  border-radius: 16px; padding: 18px; margin-top: 16px;
+  animation: fadeUp 0.5s ease;
+}
+
+.screen-time-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--rika-pink); }
+
+.st-inputs { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+
+.st-input-group { flex: 1; min-width: 120px; }
+.st-input-group label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+
+.st-input {
+  width: 100%; padding: 10px 14px; border-radius: 10px;
+  border: 1.5px solid var(--card-border); background: var(--card-bg);
+  color: var(--text); font-family: inherit; font-size: 16px; font-weight: 600;
+  text-align: center; outline: none; transition: border-color 0.2s;
+}
+.st-input:focus { border-color: var(--rika-pink); }
+
+.st-result {
+  text-align: center; font-size: 14px; font-weight: 600;
+  padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.03);
+  min-height: 40px; display: flex; align-items: center; justify-content: center;
+}
+
+/* ─── Decision Tree ─── */
+.decision-card {
+  margin-top: 16px; padding: 20px; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(79,109,245,0.08), rgba(124,58,237,0.08));
+  border: 1.5px solid rgba(79,109,245,0.2);
+  box-shadow: var(--glow);
+}
+
+.decision-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--cursed-blue); }
+.tree-item { font-size: 13px; line-height: 1.8; opacity: 0.8; margin-bottom: 6px; }
+
+/* ─── Domain Expansion Overlay ─── */
+.domain-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 9999; display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.95);
+}
+
+.domain-overlay.active { display: flex; }
+
+.domain-content {
+  text-align: center; padding: 40px 24px;
+  animation: domainExpand 1.2s ease;
+}
+
+.domain-title {
+  font-size: 14px; letter-spacing: 6px; text-transform: uppercase;
+  color: var(--cursed-blue); margin-bottom: 16px; font-weight: 700;
+  text-shadow: 0 0 30px rgba(99,102,241,0.8);
+  animation: flicker 2s ease infinite;
+}
+
+.domain-main {
+  font-size: 36px; font-weight: 800; margin-bottom: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899, #6366f1);
+  background-size: 300% 300%;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease infinite;
+}
+
+.domain-sub {
+  font-size: 16px; opacity: 0.8; margin-bottom: 8px; color: #e8e8f0;
+}
+
+.domain-sub-jp { font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 18px; color: var(--cursed-blue); margin-bottom: 4px; text-shadow: 0 0 20px rgba(99,102,241,0.5); }
+.domain-sub-cn { font-family: 'Noto Sans SC', sans-serif; font-size: 16px; opacity: 0.6; margin-bottom: 4px; color: #c4b5fd; }
+.domain-sub-en { font-size: 14px; opacity: 0.5; margin-bottom: 24px; color: #e8e8f0; }
+
+.domain-close {
+  padding: 12px 32px; border-radius: 99px; border: 2px solid var(--cursed-blue);
+  background: transparent; color: var(--cursed-blue); font-family: inherit;
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.domain-close:hover { background: var(--cursed-blue); color: #fff; }
+
+/* ─── Animations ─── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 15px rgba(99,102,241,0.4); } 50% { box-shadow: 0 0 25px rgba(99,102,241,0.7); } }
+@keyframes checkPop { 0% { transform:scale(1); } 50% { transform:scale(1.3); } 100% { transform:scale(1); } }
+@keyframes domainExpand { 0% { opacity:0; transform:scale(0.5); } 50% { opacity:1; transform:scale(1.05); } 100% { transform:scale(1); } }
+@keyframes flicker { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
+@keyframes gradientShift { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
+
+/* ─── Particle Canvas ─── */
+#particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; opacity:0.4; }
+body > *:not(#particles) { position:relative; z-index:1; }
+
+/* ─── Black Flash ─── */
+.check-btn-wrap { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+
+@keyframes bfBurst {
+  0%   { opacity:1; transform:translate(-50%,-50%) scale(0.2); box-shadow:0 0 0 6px #000, 0 0 12px 4px #8b0000; }
+  35%  { opacity:1; transform:translate(-50%,-50%) scale(1);   box-shadow:0 0 0 3px #300, 0 0 35px 18px rgba(180,0,0,0.65); }
+  100% { opacity:0; transform:translate(-50%,-50%) scale(2.2); box-shadow:0 0 0 0 transparent, 0 0 60px 30px rgba(180,0,0,0); }
+}
+@keyframes bfRay {
+  0%  { opacity:0; height:0; }
+  25% { opacity:1; }
+  55% { height:48px; opacity:0.85; }
+  100%{ height:58px; opacity:0; }
+}
+@keyframes bfScreen {
+  0%   { opacity:0.55; }
+  100% { opacity:0; }
+}
+@keyframes bfLabel {
+  0%   { opacity:0; transform:translate(-50%,-220%) scale(1.4); }
+  25%  { opacity:1; transform:translate(-50%,-220%) scale(1); }
+  75%  { opacity:1; }
+  100% { opacity:0; transform:translate(-50%,-220%) scale(0.8); }
+}
+
+.bf-screen {
+  position:fixed; inset:0; background:#000;
+  pointer-events:none; z-index:9990;
+  animation:bfScreen 0.4s ease-out forwards;
+}
+.bf-burst {
+  position:absolute; top:50%; left:50%;
+  width:56px; height:56px; border-radius:50%;
+  background:radial-gradient(circle, #000 0%, rgba(120,0,0,0.75) 45%, transparent 70%);
+  pointer-events:none; z-index:50;
+  animation:bfBurst 0.65s cubic-bezier(0.1,0,0.3,1) forwards;
+}
+.bf-ray {
+  position:absolute; top:50%; left:50%;
+  width:2px; height:0;
+  transform-origin:50% 0%;
+  background:linear-gradient(to bottom, #cc0000, rgba(180,0,0,0.3), transparent);
+  pointer-events:none;
+  animation:bfRay 0.65s ease-out forwards;
+}
+.bf-label {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-220%);
+  font-size:8px; font-weight:900; letter-spacing:3px;
+  color:#cc0000; white-space:nowrap;
+  text-shadow:0 0 10px rgba(200,0,0,0.9);
+  pointer-events:none; z-index:51;
+  animation:bfLabel 0.65s ease-out forwards;
+}
+</style>
+</head>
+<body data-theme="dark">
+<canvas id="particles"></canvas>
+
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+
+<div class="header">
+  <div class="cursed-label">✦ Daily Blueprint ✦</div>
+  <h1>George & Olivia</h1>
+  <div class="subtitle">Pick your day type. Everything gets done — the only question is when.</div>
+</div>
+
+<div class="yuta-bar" id="yutaBar">
+  <div class="yuta-avatar">⚡</div>
+  <div class="yuta-text">
+    <div class="name">Yuta</div>
+    <div class="quote" id="yutaQuote"></div>
+    <div class="quote-sub" id="yutaSub"></div>
+  </div>
+</div>
+
+<div class="progress-section" id="progressSection">
+  <div class="progress-ring-container">
+    <svg class="progress-ring" width="64" height="64" viewBox="0 0 64 64">
+      <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#6366f1"/><stop offset="100%" style="stop-color:#ec4899"/></linearGradient></defs>
+      <circle class="progress-ring-bg" cx="32" cy="32" r="28"/>
+      <circle class="progress-ring-fill" id="progressRing" cx="32" cy="32" r="28" stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
+    </svg>
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+  <div class="progress-info">
+    <div class="label">Today's Cursed Energy</div>
+    <div class="detail" id="progressDetail">Complete tasks to power up</div>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div id="content"></div>
+
+<div class="domain-overlay" id="domainOverlay">
+  <div class="domain-content">
+    <div class="domain-title">— Domain Expansion —</div>
+    <div class="domain-main" id="domainMain">完全勝利</div>
+    <div class="domain-sub-jp" id="domainJp">今日の全てのタスクを完了した！</div>
+    <div class="domain-sub-cn" id="domainCn">今天的所有任务都完成了！</div>
+    <div class="domain-sub-en" id="domainEn">All tasks complete. You've expanded your domain today.</div>
+    <br>
+    <button class="domain-close" onclick="closeDomain()">Continue</button>
+  </div>
+</div>
+
+<script>
+// ─── Data ───
+const TABS=[{key:"earlyNormal",label:"Early Day"},{key:"earlyClimb",label:"Early + Climb/Dance"},{key:"lateNormal",label:"Late Day"},{key:"lateClimb",label:"Late + Climb/Dance"},{key:"friday",label:"Friday"},{key:"protocols",label:"Rules & Protocols"}];
+
+const TYPE_MAP={together:{cls:"type-together",label:"Together"},solo:{cls:"type-solo",label:"Individual"},work:{cls:"type-work",label:"Work"},late:{cls:"type-late",label:"Late Day"},flex:{cls:"type-flex",label:"Activity"}};
+
+const PLAN_INFO={earlyNormal:{label:"Early Day",wake:"6:00 AM",sleep:"~9:30 PM",hours:"~8 hrs",desc:"Gym + career growth morning. George cooks. Evening: journal, guitar, anime."},earlyClimb:{label:"Early + Climb/Dance",wake:"6:00 AM",sleep:"~10:15 PM",hours:"~7.75 hrs",desc:"No gym — deep career block (~1h40m). Evening: activity, ordered food, journal, guitar, anime."},lateNormal:{label:"Late Day",wake:"8:00 AM",sleep:"~10:30–10:45 PM",hours:"~7–9 hrs",desc:"Nothing before work. Gym after work, George cooks. Evening: career growth, journal, guitar, anime."},lateClimb:{label:"Late + Climb/Dance",wake:"8:00 AM",sleep:"~10:45–11 PM",hours:"~7–9 hrs",desc:"Nothing before work. Activity after work. Ordered food. Career growth, journal, guitar, anime."},friday:{label:"Friday",wake:"6:00 AM",sleep:"Cap 1:30 AM",hours:"Flexible",desc:"Always early. Front-load gym + career growth. Evening 100% free."}};
+
+const S={
+earlyNormal:[
+{t:"6:00 AM",g:"Wake up together",o:"Wake up together",i:"☀️",tp:"together",n:"Phones across the room — you must get up to silence the alarm."},
+{t:"6:00–6:10",g:"Morning reset",o:"Morning reset",i:"🫧",tp:"together",n:"Splash water, brush teeth, gym clothes."},
+{t:"6:10–7:00",g:"Gym (strength, 50 min)",o:"Gym (strength, 50 min)",i:"💪",tp:"together",n:"Building gym together. Follow a set program."},
+{t:"7:00–7:20",g:"Get ready (20 min)",o:"Get ready (20–30 min)",i:"👔",tp:"solo",n:"No morning shower. Just clothes, hair, etc."},
+{t:"7:20–8:10",g:"Career growth (50 min)",o:"Career growth (40 min)",i:"📈",tp:"solo",n:"George: PM exploration, sales skills, courses, side project.\nOlivia: Stripe/Link deep-dives, engineering growth. Starts ~7:30."},
+{t:"8:10–8:20",g:"Breakfast + head out",o:"Breakfast",i:"🥣",tp:"together",n:"Quick breakfast. George leaves by 8:15–8:20 for 8:45 train."},
+{t:"9:00–5:00",g:"Work (Uber Eats)",o:"Work 9:30–5:30/6 (Stripe)",i:"💻",tp:"work",n:"George: 9–5.\nOlivia: 9:30–5:30/6, flexible.\nBonus: 30 min midday gym if possible."},
+{t:"5:00–5:30",g:"Commute → straight to kitchen",o:"Wrap up / commute",i:"🏠",tp:"solo",n:"George → podcast on → start cooking. No couch, no phone."},
+{t:"5:30–6:15",g:"Cook dinner",o:"Arrive home / help",i:"🍳",tp:"solo",n:"George cooks. Olivia arrives ~6."},
+{t:"6:15–7:00",g:"Dinner together (45 min)",o:"Dinner together (45 min)",i:"🍽️",tp:"together",n:"Sit together. No phones at the table."},
+{t:"7:00–8:00",g:"Dishes (20 min) → shower (15–20 min)",o:"Shower (45 min) + skincare",i:"🚿",tp:"solo",n:"George: dishes then shower, done ~7:40.\nOlivia: shower + skincare, done ~8:00."},
+{t:"8:00–8:20",g:"Journal (20 min)",o:"Guitar practice (20 min)",i:"📓",tp:"solo",n:"George journals. Olivia practices guitar."},
+{t:"8:20–8:40",g:"Free time",o:"Journal (optional)",i:"✨",tp:"solo",n:"George: read, relax.\nOlivia: journal if the mood is right."},
+{t:"8:40–8:50",g:"Wind down together",o:"Wind down together",i:"🌙",tp:"together",n:"Into bed. Phones across the room."},
+{t:"8:50–9:15",g:"Anime episode",o:"Anime episode",i:"📺",tp:"together",n:"One episode. Pick beforehand."},
+{t:"9:15–9:30",g:"Lights out",o:"Lights out",i:"😴",tp:"together",n:"Asleep by 9:30–10:00."}
+],
+earlyClimb:[
+{t:"6:00 AM",g:"Wake up together",o:"Wake up together",i:"☀️",tp:"together",n:"No gym — tonight's activity is your workout."},
+{t:"6:00–6:10",g:"Morning reset",o:"Morning reset",i:"🫧",tp:"together",n:"Get dressed for the day."},
+{t:"6:10–7:00",g:"Career growth deep block (50 min)",o:"Career growth deep block (50 min)",i:"📈",tp:"solo",n:"No gym = bonus career time.\nGeorge: PM exploration, courses.\nOlivia: Stripe deep-dive, engineering."},
+{t:"7:00–7:20",g:"Get ready (20 min)",o:"Get ready (20–30 min)",i:"👔",tp:"solo",n:"Same as any day."},
+{t:"7:20–8:10",g:"Career growth continued (50 min)",o:"Career growth continued (40 min)",i:"📈",tp:"solo",n:"Total: ~1 hr 40 min career growth."},
+{t:"8:10–8:20",g:"Breakfast + head out",o:"Breakfast",i:"🥣",tp:"together",n:"George catches the train."},
+{t:"9:00–5:00",g:"Work",o:"Work",i:"💻",tp:"work",n:"Normal work day."},
+{t:"5:00–7:30",g:"Rock climbing / Dance class",o:"Rock climbing / Dance class",i:"🧗",tp:"flex",n:"After work → straight to activity.\nWhoever isn't going orders food."},
+{t:"7:30–8:15",g:"Eat (ordered food, 45 min)",o:"Eat (ordered food, 45 min)",i:"🥡",tp:"together",n:"No cooking. Eat together."},
+{t:"8:15–9:15",g:"Shower → journal (20 min)",o:"Shower + skincare → guitar (20 min)",i:"🚿",tp:"solo",n:"George: shower then journal.\nOlivia: shower + skincare then guitar."},
+{t:"9:15–9:35",g:"Free time",o:"Journal (optional)",i:"✨",tp:"solo",n:"George: relax.\nOlivia: journal if it feels right."},
+{t:"9:35–9:45",g:"Wind down together",o:"Wind down together",i:"🌙",tp:"together",n:"Phones across the room."},
+{t:"9:45–10:10",g:"Anime episode",o:"Anime episode",i:"📺",tp:"together",n:"One episode."},
+{t:"~10:15",g:"Lights out",o:"Lights out",i:"😴",tp:"together",n:"Asleep ~10:15."}
+],
+lateNormal:[
+{t:"8:00 AM",g:"Wake up",o:"Wake up",i:"☀️",tp:"late",n:"Late day. Nothing before work. Everything tonight."},
+{t:"8:00–8:20",g:"Get ready + head out",o:"Get ready",i:"👔",tp:"late",n:"George: train by 8:45.\nOlivia: work starts 9:30."},
+{t:"9:00–5:00",g:"Work",o:"Work",i:"💻",tp:"work",n:"Normal day. No midday gym — gymming after work."},
+{t:"5:00–5:15",g:"Commute home / change",o:"Head home / change",i:"🏠",tp:"late",n:"Quick turnaround into gym clothes."},
+{t:"5:15–6:00",g:"Gym (strength, 45 min)",o:"Gym (strength, 45 min)",i:"💪",tp:"together",n:"Building gym together. 45 min."},
+{t:"6:00–6:15",g:"Quick change → start cooking",o:"Quick change / decompress",i:"🍳",tp:"solo",n:"George: gym to kitchen. Shower after dinner."},
+{t:"6:15–7:00",g:"Cook dinner",o:"Help / decompress",i:"🍳",tp:"solo",n:"George cooks."},
+{t:"7:00–7:45",g:"Dinner together (45 min)",o:"Dinner together (45 min)",i:"🍽️",tp:"together",n:"Eat together. No phones."},
+{t:"7:45–8:45",g:"Dishes → shower",o:"Shower (45 min) + skincare",i:"🚿",tp:"solo",n:"George: dishes then shower, done ~8:25.\nOlivia: done ~8:45."},
+{t:"8:45–9:35",g:"Career growth (50 min)",o:"Guitar (20 min) → career growth (30 min)",i:"📈",tp:"solo",n:"George: PM exploration, courses.\nOlivia: guitar then career growth."},
+{t:"9:35–9:55",g:"Journal (20 min)",o:"Journal (optional)",i:"📓",tp:"solo",n:"George journals.\nOlivia: journal if the mood strikes."},
+{t:"9:55–10:05",g:"Wind down together",o:"Wind down together",i:"🌙",tp:"together",n:"Into bed. Phones across room."},
+{t:"10:05–10:30",g:"Anime episode",o:"Anime episode",i:"📺",tp:"together",n:"One episode. You earned it."},
+{t:"~10:30–10:45",g:"Lights out",o:"Lights out",i:"😴",tp:"late",n:"Asleep ~10:30–10:45. Try early tomorrow."}
+],
+lateClimb:[
+{t:"8:00 AM",g:"Wake up",o:"Wake up",i:"☀️",tp:"late",n:"Late + climbing/dance. No gym needed."},
+{t:"8:00–8:20",g:"Get ready + head out",o:"Get ready",i:"👔",tp:"late",n:"George catches the train."},
+{t:"9:00–5:00",g:"Work",o:"Work",i:"💻",tp:"work",n:"Normal work day."},
+{t:"5:00–7:30",g:"Rock climbing / Dance class",o:"Rock climbing / Dance class",i:"🧗",tp:"flex",n:"After work → activity. Other person orders food."},
+{t:"7:30–8:15",g:"Eat (ordered food, 45 min)",o:"Eat (ordered food, 45 min)",i:"🥡",tp:"together",n:"No cooking. Eat together."},
+{t:"8:15–9:15",g:"Shower → career growth (40 min)",o:"Shower + skincare → guitar (20 min)",i:"🚿",tp:"solo",n:"George: shower then career growth.\nOlivia: shower + skincare then guitar."},
+{t:"9:15–10:05",g:"Career growth (30 min) → journal (20 min)",o:"Career growth (30 min) → journal (optional)",i:"📈",tp:"solo",n:"George: career then journal.\nOlivia: career then journal if she wants."},
+{t:"10:05–10:15",g:"Wind down together",o:"Wind down together",i:"🌙",tp:"together",n:"Into bed. Phones across room."},
+{t:"10:15–10:40",g:"Anime episode",o:"Anime episode",i:"📺",tp:"together",n:"One episode."},
+{t:"~10:45–11:00",g:"Lights out",o:"Lights out",i:"😴",tp:"late",n:"Asleep ~10:45–11. Keep this rare (max 1x/week)."}
+],
+friday:[
+{t:"6:00 AM",g:"Wake up together",o:"Wake up together",i:"☀️",tp:"together",n:"Friday is always early. Front-load everything."},
+{t:"6:00–6:10",g:"Morning reset",o:"Morning reset",i:"🫧",tp:"together",n:"Same routine."},
+{t:"6:10–7:00",g:"Gym (strength, 50 min)",o:"Gym (strength, 50 min)",i:"💪",tp:"together",n:"Normal gym session."},
+{t:"7:00–7:20",g:"Get ready",o:"Get ready",i:"👔",tp:"solo",n:"Same as any early day."},
+{t:"7:20–8:10",g:"Career growth (50 min)",o:"Career growth (40 min)",i:"📈",tp:"solo",n:"George is WFH today — no commute. Same career block."},
+{t:"8:10–8:30",g:"Breakfast",o:"Breakfast",i:"🥣",tp:"together",n:"No rush — George works from home. Enjoy a slower breakfast together."},
+{t:"9:00–5:00",g:"Work (WFH)",o:"Work",i:"💻",tp:"work",n:"George WFH. Olivia normal schedule."},
+{t:"5:00 PM+",g:"Evening is completely free",o:"Evening is completely free",i:"🌟",tp:"flex",n:"Date night, friends, binge anime, do nothing.\nNo obligations. Olivia: guitar/journal if you want, zero pressure."},
+{t:"Bedtime",g:"Sleep whenever (cap 1:30 AM)",o:"Sleep whenever (cap 1:30 AM)",i:"🌙",tp:"flex",n:"Your release valve. Cap 1:30 AM → up by 10 AM Saturday."}
+]};
+
+const YUTA_QUOTES=[
+{en:"The strength to protect someone — that's real cursed energy. Protect your schedule today.",jp:"誰かを守る力——それが本当の呪力だ。今日のスケジュールを守ろう。",cn:"保护某人的力量——那才是真正的咒力。今天也守护好你的计划。"},
+{en:"I'll get stronger. So strong that even my regrets can't hold me back.",jp:"もっと強くなる。後悔に負けないくらいに。",cn:"我会变得更强。强到连遗憾都无法阻止我。"},
+{en:"Don't let yesterday's exhaustion steal today's potential.",jp:"昨日の疲れに今日の可能性を奪わせるな。",cn:"别让昨天的疲惫偷走今天的可能性。"},
+{en:"Even the strongest sorcerers started by showing up. Get to the gym.",jp:"最強の術師も、まず一歩を踏み出すことから始まった。ジムに行こう。",cn:"即使是最强的术师，也是从迈出第一步开始的。去健身房吧。"},
+{en:"Rika and I didn't give up. Neither should you.",jp:"リカと僕は諦めなかった。君たちも諦めるな。",cn:"里香和我没有放弃。你们也不要放弃。"},
+{en:"Cursed energy flows strongest when two people sync. You've got the buddy system.",jp:"呪力は二人が同期する時に最も強く流れる。バディシステムを使え。",cn:"当两个人同步时，咒力流动最强。好好利用你们的伙伴系统。"},
+{en:"Cooking dinner isn't a chore — it's training. Every sorcerer fuels their body.",jp:"夕食を作ることは雑用じゃない——訓練だ。術師は体に燃料を与える。",cn:"做晚餐不是杂活——是修炼。每个术师都需要给身体补充能量。"},
+{en:"Put the phone down. That blue light is a cursed technique working against you.",jp:"スマホを置け。あのブルーライトはお前に対する呪術だ。",cn:"放下手机。蓝光是在对你施展诅咒。"},
+{en:"Sunday Reset is your binding vow for the week. Honor it.",jp:"日曜リセットは一週間の縛りの誓い。それを守れ。",cn:"周日重置是你对这一周的束缚之誓。请遵守它。"},
+{en:"A late day isn't a failure. Even Special Grade sorcerers need rest. But they always come back stronger.",jp:"遅い日は失敗じゃない。特級術師でも休息が必要だ。でも必ず強くなって戻る。",cn:"晚起的一天不是失败。即使是特级术师也需要休息。但他们总是更强地回来。"},
+];
+
+const TASK_CHEERS=[
+{en:"Cursed energy rising!",jp:"呪力上昇中！",cn:"咒力上升中！"},
+{en:"That's Special Grade energy right there.",jp:"それこそ特級の力だ。",cn:"这就是特级的力量。"},
+{en:"Rika would be proud.",jp:"リカも誇りに思うだろう。",cn:"里香也会为你骄傲的。"},
+{en:"Domain expanding, one task at a time.",jp:"領域展開、一つずつ。",cn:"领域展开，一步一步来。"},
+{en:"Your cursed technique is consistency. Keep going.",jp:"お前の呪術は継続だ。続けろ。",cn:"你的咒术就是坚持。继续前进。"},
+{en:"Unlimited energy flows through you.",jp:"無限の力がお前に流れる。",cn:"无限的力量在你体内流动。"},
+];
+
+const DOMAIN_MSGS=[
+{main:"完全勝利",jp:"全タスク完了！今日の領域を展開した！",cn:"所有任务完成！今天的领域已展开！",en:"All tasks complete. Domain fully expanded."},
+{main:"無量空処",jp:"怠惰の呪いを打ち破った！",cn:"打破了懒惰的诅咒！",en:"You've broken through the curse of laziness."},
+{main:"特級覚醒",jp:"George と Olivia、特級に昇格！",cn:"George 和 Olivia，晋升为特级！",en:"George & Olivia have ascended to Special Grade."},
+];
+
+const RULES=[
+{t:"The Phone Rule",i:"📵",d:"Phones charge across the room overnight. You physically get up to silence the alarm."},
+{t:"The Kitchen Rule",i:"🍳",d:"George: on cooking nights, walk in → kitchen. Late days: gym first, then kitchen. No couch."},
+{t:"The Buddy System",i:"🤝",d:"Wake up together, gym together, bed together. If one can't, the other still goes."},
+{t:"Early & Late Are Equal",i:"⚖️",d:"Neither is 'better.' Both get everything done. Pick what fits today."},
+{t:"Late = Protect Tasks, Not Sleep",i:"🌙",d:"On late days, everything still gets done. You stay up later. Sleep flexes, not goals."},
+{t:"The Sunday Reset",i:"🔄",d:"Every Sunday, 30 min: climbing/dance day, WFH days, restaurant visits, meal plan."},
+{t:"The Bedtime Pact",i:"😴",d:"Go to bed together every weeknight — early or late."},
+{t:"Friday = Early + Free Night",i:"🌟",d:"Friday morning: always early. Evening: 100% free."},
+{t:"Weekend Body Clock",i:"🕐",d:"Fri/Sat: bed by 1:30 AM, up by 10 AM. Sunday night: back to weekday bedtime."},
+];
+
+const PROTOCOLS=[
+{t:"Can't fall asleep",i:"🌙",s:["Don't stress.","Still awake 30 min later? Get up, do something boring 15 min.","No phones.","Tomorrow: late day.","2+ nights: no caffeine after 2 PM."]},
+{t:"Dinner running late",i:"🍳",s:["Not home by 5:30? Order food.","Gym ran long? Order food.","After 7:30? Skip anime tonight.","Sunday meal prep helps."]},
+{t:"One has energy, other doesn't",i:"🤝",s:["Energized person leads gently.","Tired person: 15 min commitment.","If one can't, other still goes.","Discuss at Sunday Reset."]},
+{t:"Phone / scrolling relapse",i:"📱",s:["Phones across room. Non-negotiable.","Stand up immediately.","App timers: 15 min after 8 PM.","George: kitchen, not couch.","Code word: 'Hey, should we [next thing]?'"]},
+{t:"Restaurant visit (George home ~7 PM)",i:"🍜",s:["Order food.","Olivia: use 5:30–7 for guitar/career/rest.","Eat together at 7. Evening from 7:45."]},
+{t:"Missed guitar (Olivia)",i:"🎸",s:["Primary: after shower.","Missed? Don't stress.","Aim 5/7 days.","Tight nights: guitar can be cut."]},
+{t:"Choosing early vs late",i:"🤔",s:["Decide before bed.","Early: alarm 6, gym clothes out.","Late: alarm 8. No guilt.","Default early.","Sunday Reset: rough-plan the week."]},
+];
+
+const DECISION=[
+{l:"Friday?",v:"Always Friday plan (early morning, free evening)."},
+{l:"Climbing/dance tonight?",v:"Early + Climb/Dance or Late + Climb/Dance."},
+{l:"Regular day?",v:"Early Day or Late Day."},
+{l:"Early or late?",v:"Decide the night before. Default early."},
+{l:"Late days:",v:"Everything gets done. Sleep later."},
+{l:"Weekends:",v:"No set schedule. Bed by 1:30 AM, up by 10 AM. Sunday: back to weekday."},
+];
+
+// ─── State ───
+let activeTab='earlyNormal';
+let checkedTasks={};
+let today=new Date().toDateString();
+
+function loadState(){
+  try{
+    const saved=localStorage.getItem('blueprint_state');
+    if(saved){const d=JSON.parse(saved);if(d.date===today){checkedTasks=d.checks||{};}else{checkedTasks={};saveState();}}
+  }catch(e){}
+}
+
+function saveState(){
+  try{localStorage.setItem('blueprint_state',JSON.stringify({date:today,checks:checkedTasks}));}catch(e){}
+}
+
+function loadTheme(){
+  try{const t=localStorage.getItem('blueprint_theme');if(t)document.body.dataset.theme=t;updateThemeBtn();}catch(e){}
+}
+
+function toggleTheme(){
+  const t=document.body.dataset.theme==='dark'?'light':'dark';
+  document.body.dataset.theme=t;
+  try{localStorage.setItem('blueprint_theme',t);}catch(e){}
+  updateThemeBtn();initParticles();
+}
+
+function updateThemeBtn(){
+  document.getElementById('themeToggle').textContent=document.body.dataset.theme==='dark'?'☀️':'🌙';
+}
+
+// ─── Yuta ───
+function setYutaQuote(){
+  const q=YUTA_QUOTES[Math.floor(Math.random()*YUTA_QUOTES.length)];
+  document.getElementById('yutaQuote').textContent=q.en;
+  document.getElementById('yutaSub').innerHTML=`<span style="font-family:'Zen Kaku Gothic New'">${q.jp}</span><br><span style="font-family:'Noto Sans SC'">${q.cn}</span>`;
+}
+
+function showTaskCheer(){
+  const q=TASK_CHEERS[Math.floor(Math.random()*TASK_CHEERS.length)];
+  document.getElementById('yutaQuote').textContent=q.en;
+  document.getElementById('yutaSub').innerHTML=`<span style="font-family:'Zen Kaku Gothic New'">${q.jp}</span> · <span style="font-family:'Noto Sans SC'">${q.cn}</span>`;
+  const bar=document.getElementById('yutaBar');
+  bar.style.transform='scale(1.02)';setTimeout(()=>bar.style.transform='',300);
+}
+
+// ─── Progress ───
+function updateProgress(){
+  const schedule=S[activeTab];
+  if(!schedule)return;
+  const total=schedule.length;
+  const done=schedule.filter((_,i)=>checkedTasks[activeTab+'_'+i]).length;
+  const pct=Math.round((done/total)*100);
+  const circ=175.9;
+  const offset=circ-(circ*pct/100);
+  document.getElementById('progressRing').style.strokeDashoffset=offset;
+  document.getElementById('progressPct').textContent=pct+'%';
+  document.getElementById('progressDetail').textContent=done+'/'+total+' tasks complete'+(pct===100?' — DOMAIN EXPANDED!' : '');
+  if(pct===100&&done>0)triggerDomain();
+}
+
+function triggerDomain(){
+  const msg=DOMAIN_MSGS[Math.floor(Math.random()*DOMAIN_MSGS.length)];
+  document.getElementById('domainMain').textContent=msg.main;
+  document.getElementById('domainJp').textContent=msg.jp;
+  document.getElementById('domainCn').textContent=msg.cn;
+  document.getElementById('domainEn').textContent=msg.en;
+  document.getElementById('domainOverlay').classList.add('active');
+}
+
+function closeDomain(){document.getElementById('domainOverlay').classList.remove('active');}
+
+// ─── Render ───
+function renderTabs(){
+  const c=document.getElementById('tabs');
+  c.innerHTML=TABS.map(t=>`<button class="tab ${t.key===activeTab?'active':''}" data-key="${t.key}">${t.label}</button>`).join('');
+  c.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{activeTab=b.dataset.key;renderTabs();renderContent();updateProgress();}));
+}
+
+function renderBlock(b,i){
+  const s=TYPE_MAP[b.tp];
+  const key=activeTab+'_'+i;
+  const done=checkedTasks[key];
+  const same=b.g===b.o;
+  const act=same?b.g:`<span class="person-label">G:</span> ${b.g}<br><span class="person-label">O:</span> ${b.o}`;
+  return `<div class="block ${s.cls}" style="animation-delay:${i*0.03}s">
+    <div class="block-header">
+      <span class="block-icon">${b.i}</span>
+      <div class="block-content" onclick="toggleNote(${i})">
+        <div class="block-meta">
+          <span class="block-time">${b.t}</span>
+          <span class="block-type">${s.label}</span>
+        </div>
+        <div class="block-activity">${act}</div>
+      </div>
+      <div class="block-actions">
+        <div class="check-btn-wrap"><button class="check-btn ${done?'done':''}" data-check-key="${key}" onclick="toggleCheck('${key}',${i})">${done?'✓':''}</button></div>
+        <span class="block-chevron" id="chev-${i}" onclick="toggleNote(${i})">▾</span>
+      </div>
+    </div>
+    <div class="block-note" id="note-${i}" style="border-top: 1px solid currentColor; border-top-color: inherit; opacity: 0.15;">${b.n}</div>
+  </div>`;
+}
+
+function toggleNote(i){
+  const n=document.getElementById('note-'+i);
+  const c=document.getElementById('chev-'+i);
+  if(!n)return;
+  n.classList.toggle('open');
+  if(n.classList.contains('open'))n.style.opacity='0.7';else n.style.opacity='0.15';
+  c.classList.toggle('open');
+}
+
+function triggerBlackFlash(btn){
+  const screen=document.createElement('div');
+  screen.className='bf-screen';
+  document.body.appendChild(screen);
+  setTimeout(()=>screen.remove(),450);
+
+  const wrap=btn.closest('.check-btn-wrap');
+  if(!wrap)return;
+  const burst=document.createElement('div');
+  burst.className='bf-burst';
+  [0,45,90,135,180,225,270,315].forEach(angle=>{
+    const ray=document.createElement('div');
+    ray.className='bf-ray';
+    ray.style.transform=`translate(-50%,0%) rotate(${angle}deg)`;
+    ray.style.animationDelay=`${Math.random()*0.04}s`;
+    burst.appendChild(ray);
+  });
+  const label=document.createElement('div');
+  label.className='bf-label';
+  label.textContent='BLACK FLASH';
+  burst.appendChild(label);
+  wrap.appendChild(burst);
+  setTimeout(()=>burst.remove(),700);
+}
+
+function toggleCheck(key,i){
+  checkedTasks[key]=!checkedTasks[key];
+  saveState();
+  if(checkedTasks[key]){
+    showTaskCheer();
+    const btn=document.querySelector(`.check-btn[data-check-key="${key}"]`);
+    if(btn){btn.classList.add('done');btn.textContent='✓';triggerBlackFlash(btn);}
+    setTimeout(()=>{renderContent();updateProgress();},700);
+  } else {
+    renderContent();
+    updateProgress();
+  }
+}
+
+function renderContent(){
+  const c=document.getElementById('content');
+
+  if(activeTab==='protocols'){
+    let h='';
+    h+=`<h2 class="section-title">Ground Rules</h2>`;
+    h+=RULES.map((r,i)=>`<div class="rule-card" style="animation-delay:${i*0.03}s"><div class="rule-title"><span class="icon">${r.i}</span><span class="name">${r.t}</span></div><div class="rule-desc">${r.d}</div></div>`).join('');
+    h+=`<h2 class="section-title" style="margin-top:24px">If-Then Protocols</h2>`;
+    h+=PROTOCOLS.map((p,i)=>`<div class="protocol-card" style="animation-delay:${i*0.03}s"><div class="rule-title"><span class="icon">${p.i}</span><span class="name">If: ${p.t}</span></div><div class="protocol-steps">${p.s.map((s,j)=>`<div class="protocol-step"><span class="num">${j+1}.</span><span class="text">${s}</span></div>`).join('')}</div></div>`).join('');
+
+    h+=`<div class="screen-time-card"><h3>📱 Screen Time Challenge</h3><div class="st-inputs"><div class="st-input-group"><label>George (min)</label><input class="st-input" type="number" id="stGeorge" placeholder="0" oninput="calcScreenTime()"></div><div class="st-input-group"><label>Olivia (min)</label><input class="st-input" type="number" id="stOlivia" placeholder="0" oninput="calcScreenTime()"></div></div><div class="st-result" id="stResult">Enter your screen time to see who won</div></div>`;
+
+    h+=`<div class="decision-card"><h3>📋 How to Pick Your Day</h3>${DECISION.map(d=>`<div class="tree-item"><strong>${d.l}</strong> → ${d.v}</div>`).join('')}</div>`;
+    c.innerHTML=h;
+    document.getElementById('progressSection').style.display='none';
+    return;
+  }
+
+  document.getElementById('progressSection').style.display='flex';
+  const schedule=S[activeTab];
+  const info=PLAN_INFO[activeTab];
+
+  let h=`<div class="plan-info"><div class="plan-meta"><span class="plan-label">${info.label}</span><span>Wake: ${info.wake}</span><span>Sleep: ${info.sleep}</span><span>${info.hours}</span></div>${info.desc}</div>`;
+  h+=`<div class="schedule">${schedule.map((b,i)=>renderBlock(b,i)).join('')}</div>`;
+  c.innerHTML=h;
+}
+
+function calcScreenTime(){
+  const g=parseInt(document.getElementById('stGeorge').value)||0;
+  const o=parseInt(document.getElementById('stOlivia').value)||0;
+  const r=document.getElementById('stResult');
+  if(g===0&&o===0){r.textContent='Enter your screen time to see who won';return;}
+  if(g<o)r.innerHTML=`⚡ <strong>George wins!</strong> ${g} vs ${o} min — ${o-g} min less scrolling`;
+  else if(o<g)r.innerHTML=`⚡ <strong>Olivia wins!</strong> ${o} vs ${g} min — ${g-o} min less scrolling`;
+  else r.innerHTML=`🤝 <strong>Tie!</strong> Both at ${g} min — you're in sync`;
+}
+
+// ─── Particles ───
+function initParticles(){
+  const canvas=document.getElementById('particles');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  const isDark=document.body.dataset.theme==='dark';
+  const particles=[];
+  const count=30;
+
+  for(let i=0;i<count;i++){
+    particles.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height,
+      r:Math.random()*2+0.5,
+      dx:(Math.random()-0.5)*0.3,
+      dy:(Math.random()-0.5)*0.3,
+      alpha:Math.random()*0.5+0.1,
+    });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=isDark?`rgba(99,102,241,${p.alpha})`:`rgba(99,102,241,${p.alpha*0.5})`;
+      ctx.fill();
+      p.x+=p.dx;p.y+=p.dy;
+      if(p.x<0||p.x>canvas.width)p.dx*=-1;
+      if(p.y<0||p.y>canvas.height)p.dy*=-1;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+window.addEventListener('resize',()=>{
+  const c=document.getElementById('particles');
+  c.width=window.innerWidth;c.height=window.innerHeight;
+});
+
+// ─── Init ───
+loadState();
+loadTheme();
+setYutaQuote();
+renderTabs();
+renderContent();
+updateProgress();
+initParticles();
+</script>
+</body>
+</html>
