@@ -1983,7 +1983,7 @@ function triggerBlackFlash(originEl) {
     c2d.beginPath();
     c2d.moveTo(pts[0][0], pts[0][1]);
     for (let i = 1; i < pts.length; i++) c2d.lineTo(pts[i][0], pts[i][1]);
-    c2d.strokeStyle = '#cc0000';
+    c2d.strokeStyle = '#ff1a1a';
     c2d.globalAlpha = alpha * 0.85;
     c2d.lineWidth = baseWidth * 2;
     c2d.stroke();
@@ -2041,10 +2041,20 @@ function triggerBlackFlash(originEl) {
       c2d.fillRect(0, 0, canvas.width, canvas.height);
     }
 
+    // ── Light mode: dark background overlay for contrast ──
+    const isLight = document.documentElement.getAttribute('data-theme') !== 'dark';
+    if (isLight) {
+      const darkA = t < 0.08
+        ? 0.72                                      // instant on during white flash
+        : Math.max(0, (1 - t) * 0.65);             // fade out with bolts
+      c2d.fillStyle = `rgba(8,4,12,${darkA})`;
+      c2d.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     // ── Phase 1-2 (t < 0.25): Red screen tint ──
     if (t < 0.25) {
       const a = Math.max(0, (0.25 - t) / 0.25) * 0.55;
-      c2d.fillStyle = `rgba(160,0,0,${a})`;
+      c2d.fillStyle = `rgba(200,0,0,${a})`;
       c2d.fillRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -2069,8 +2079,8 @@ function triggerBlackFlash(originEl) {
       const burstR = 90 * (t / 0.35);
       const g = c2d.createRadialGradient(cx, cy, 0, cx, cy, burstR);
       g.addColorStop(0,   `rgba(255,255,255,${burstAlpha})`);
-      g.addColorStop(0.3, `rgba(220,0,0,${burstAlpha * 0.9})`);
-      g.addColorStop(0.7, `rgba(80,0,0,${burstAlpha * 0.4})`);
+      g.addColorStop(0.3, `rgba(255,26,26,${burstAlpha * 0.9})`);
+      g.addColorStop(0.7, `rgba(120,0,0,${burstAlpha * 0.4})`);
       g.addColorStop(1,   'rgba(0,0,0,0)');
       c2d.fillStyle = g;
       c2d.beginPath();
