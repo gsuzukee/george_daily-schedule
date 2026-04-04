@@ -543,7 +543,7 @@ body {
 /* ── Yuta Motivation Card ── */
 .motiv-card {
   position: relative; border-radius: 18px; overflow: hidden;
-  min-height: 180px; margin-top: 14px;
+  min-height: 180px; margin-top: 0; margin-bottom: 14px;
   cursor: pointer; user-select: none;
   box-shadow: 0 4px 20px rgba(0,0,0,0.28);
 }
@@ -733,13 +733,6 @@ body {
   <div class="tab-content">
     <div class="tab-panel on" id="p-today">
       <div class="day-sel" id="daySel"></div>
-      <div class="prog-card" id="progCard">
-        <div class="prog-lbl">Today's Progress</div>
-        <div class="prog-num" id="progNum">—</div>
-        <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-      </div>
-      <div id="streakRowToday"></div>
-      <div class="tl" id="tlWrap"></div>
       <div class="motiv-card" id="motivCard" onclick="shuffleYutaQuote()" style="display:none">
         <div class="motiv-bg"></div>
         <div class="motiv-overlay"></div>
@@ -750,6 +743,13 @@ body {
           <div class="motiv-en" id="motivEN"></div>
         </div>
       </div>
+      <div class="prog-card" id="progCard">
+        <div class="prog-lbl">Today's Progress</div>
+        <div class="prog-num" id="progNum">—</div>
+        <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+      <div id="streakRowToday"></div>
+      <div class="tl" id="tlWrap"></div>
     </div>
 
     <div class="tab-panel" id="p-progress">
