@@ -442,35 +442,28 @@ body {
 }
 .celebrate-btn:active { opacity: 0.85; }
 
-/* ── Video Celebration Overlay ── */
+/* ── Video Celebration Background ── */
 #videoOverlay {
-  display: none; position: fixed; inset: 0; z-index: 480;
-  background: #000;
-  align-items: center; justify-content: center;
+  display: none; position: fixed; inset: 0; z-index: 2;
+  pointer-events: none;
 }
-#videoOverlay.on { display: flex; }
-#videoClose {
-  position: absolute; top: 16px; right: 16px;
-  width: 44px; height: 44px; border-radius: 50%; border: none;
-  background: rgba(255,255,255,0.18); color: #fff;
-  font-size: 20px; line-height: 1; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-family: inherit; z-index: 481;
-}
-#videoClose:active { background: rgba(255,255,255,0.35); }
+#videoOverlay.on { display: block; }
 #celebVideo {
-  width: 100%; height: 100%; object-fit: contain;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.35;
+  transition: opacity 1.5s ease;
 }
-/* iOS landscape CSS fallback (when webkitEnterFullscreen is unavailable) */
-#videoOverlay.landscape-fallback {
-  overflow: hidden;
+#videoOverlay.fading #celebVideo { opacity: 0; }
+#videoClose {
+  display: none; position: fixed; bottom: 100px; right: 16px; z-index: 3;
+  pointer-events: auto;
+  background: rgba(0,0,0,0.55); color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 99px;
+  padding: 6px 14px; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
 }
-#videoOverlay.landscape-fallback #celebVideo {
-  width: 100vh; height: 100vw;
-  transform: rotate(90deg);
-  transform-origin: center center;
-  object-fit: cover;
-}
+#videoClose.on { display: flex; align-items: center; gap: 5px; }
+#videoClose:active { opacity: 0.7; }
 
 /* ── Toast Notifications ── */
 .toast {
@@ -908,11 +901,11 @@ body > *:not(#particles) { position:relative; z-index:1; }
   </defs>
 </svg>
 
-<!-- ── Video Celebration Overlay ── -->
+<!-- ── Video Celebration Background ── -->
 <div id="videoOverlay">
-  <button id="videoClose" onclick="closeVideoOverlay()">✕</button>
   <video id="celebVideo" src="celebration-video.mp4" playsinline preload="auto"></video>
 </div>
+<button id="videoClose" onclick="closeVideoOverlay()">✕ Stop</button>
 
 <!-- ── Celebration ── -->
 <div class="celebrate-overlay" id="celebrateOverlay">
@@ -1895,11 +1888,8 @@ function triggerCelebration() {
   const c1 = user === 'george' ? georgeColor : oliviaColor;
   const c2 = '#5856D6';
 
-  // Celebration chime — three rising notes (C5 → E5 → G5)
-  playCelebrationChime();
-
-  // Show video overlay after confetti fires
-  setTimeout(showVideoOverlay, 600);
+  // Start video background immediately
+  showVideoOverlay();
 
   // Confetti bursts
   const duration = 3000;
@@ -1915,74 +1905,50 @@ function triggerCelebration() {
   })();
 }
 
-function playCelebrationChime() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // C5 → E5 → G5 — rising major triad, bell-like decay
-    [523.25, 659.25, 783.99].forEach((freq, i) => {
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      const t = ctx.currentTime + i * 0.18;
-      osc.frequency.setValueAtTime(freq, t);
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.28, t + 0.015);  // fast attack
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.55); // bell decay
-      osc.start(t);
-      osc.stop(t + 0.55);
-    });
-    setTimeout(() => ctx.close(), 1400);
-  } catch(e) {}
-}
-
 function closeCelebration() {
   document.getElementById('celebrateOverlay').classList.remove('on');
 }
 
-// ── Video Celebration Overlay ──
+// ── Video Celebration Background ──
 function showVideoOverlay() {
-  const overlay = document.getElementById('videoOverlay');
-  const video   = document.getElementById('celebVideo');
+  const overlay  = document.getElementById('videoOverlay');
+  const video    = document.getElementById('celebVideo');
+  const closeBtn = document.getElementById('videoClose');
+  overlay.classList.remove('fading');
   overlay.classList.add('on');
+  closeBtn.classList.add('on');
   video.currentTime = 0;
+  video.volume = 0.7;
   video.muted = false;
   const p = video.play();
   if (p !== undefined) {
-    p.then(() => {
-      // Try native iOS fullscreen — auto-rotates to landscape
-      if (typeof video.webkitEnterFullscreen === 'function') {
-        try { video.webkitEnterFullscreen(); } catch(e) {
-          overlay.classList.add('landscape-fallback');
-        }
-      }
-    }).catch(() => {
-      // Autoplay blocked — play muted first then unmute
+    p.catch(() => {
+      // Autoplay blocked — play muted then unmute (user already tapped)
       video.muted = true;
-      video.play().then(() => {
-        video.muted = false;
-        if (typeof video.webkitEnterFullscreen === 'function') {
-          try { video.webkitEnterFullscreen(); } catch(e) {
-            overlay.classList.add('landscape-fallback');
-          }
-        }
-      });
+      video.play().then(() => { video.muted = false; video.volume = 0.7; });
     });
   }
-  // When iOS exits native fullscreen, close overlay
-  video.addEventListener('webkitendfullscreen', closeVideoOverlay, { once: true });
-  // Auto-close when video ends
-  video.addEventListener('ended', closeVideoOverlay, { once: true });
+  // Auto-fade when video ends naturally
+  video.addEventListener('ended', fadeOutVideo, { once: true });
+}
+
+function fadeOutVideo() {
+  const overlay  = document.getElementById('videoOverlay');
+  const video    = document.getElementById('celebVideo');
+  const closeBtn = document.getElementById('videoClose');
+  overlay.classList.add('fading');
+  closeBtn.classList.remove('on');
+  setTimeout(() => {
+    video.pause();
+    video.currentTime = 0;
+    overlay.classList.remove('on', 'fading');
+  }, 1500);
 }
 
 function closeVideoOverlay() {
-  const overlay = document.getElementById('videoOverlay');
-  const video   = document.getElementById('celebVideo');
-  try { if (document.webkitExitFullscreen) document.webkitExitFullscreen(); } catch(e) {}
-  video.pause();
-  video.currentTime = 0;
-  overlay.classList.remove('on', 'landscape-fallback');
+  const video = document.getElementById('celebVideo');
+  video.removeEventListener('ended', fadeOutVideo);
+  fadeOutVideo();
 }
 
 // ── Yuta Motivation Card ──
