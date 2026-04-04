@@ -7,6 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-database-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
 :root {
   --bg:      #F5F5F7;
@@ -317,6 +318,34 @@ body {
 }
 .sh-name { font-size: 15px; font-weight: 600; color: var(--text); }
 
+/* ── Celebration ── */
+.celebrate-overlay {
+  display: none; position: fixed; inset: 0; z-index: 400;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.celebrate-overlay.on { display: flex; }
+.celebrate-card {
+  background: var(--bg2); border-radius: 24px;
+  border: 1px solid var(--border); padding: 36px 32px;
+  text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  pointer-events: all; max-width: 300px;
+  animation: celebIn 0.4s cubic-bezier(0.32,0.72,0,1) both;
+}
+@keyframes celebIn {
+  from { opacity:0; transform: scale(0.8); }
+  to   { opacity:1; transform: scale(1); }
+}
+.celebrate-emoji { font-size: 52px; margin-bottom: 12px; }
+.celebrate-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.celebrate-sub { font-size: 15px; color: var(--text2); line-height: 1.5; margin-bottom: 20px; }
+.celebrate-btn {
+  padding: 12px 28px; border-radius: 12px; border: none;
+  background: var(--accent); color: #fff;
+  font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.celebrate-btn:active { opacity: 0.85; }
+
 /* ── Toast Notifications ── */
 .toast {
   position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
@@ -593,6 +622,16 @@ body {
         <div class="sh-name">Olivia</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ── Celebration ── -->
+<div class="celebrate-overlay" id="celebrateOverlay">
+  <div class="celebrate-card">
+    <div class="celebrate-emoji">🎉</div>
+    <div class="celebrate-title" id="celebTitle">All done!</div>
+    <div class="celebrate-sub" id="celebSub"></div>
+    <button class="celebrate-btn" onclick="closeCelebration()">Let's go 💪</button>
   </div>
 </div>
 
@@ -1081,7 +1120,10 @@ function save() {
   refToday(user).set({
     dayType, tasks: checks, percentage: pct,
     updatedAt: firebase.database.ServerValue.TIMESTAMP
-  }).then(() => updateStreak(user));
+  }).then(() => {
+    updateStreak(user);
+    checkCelebration(pct);
+  });
 }
 
 // ── Today ──
@@ -1317,6 +1359,50 @@ function renderRules() {
         <div class="dec-q">${d.l}</div>
         <div class="dec-a">${d.v}</div>
       </div>`).join('')}`;
+}
+
+// ── Celebration ──
+function checkCelebration(pct) {
+  if (pct < 100) return;
+  // Only trigger once per day per user — flag in Firebase
+  db.ref(`/users/${user}/checkins/${todayKey}/celebrationShown`).once('value', snap => {
+    if (snap.val()) return; // already celebrated today
+    db.ref(`/users/${user}/checkins/${todayKey}/celebrationShown`).set(true);
+    triggerCelebration();
+  });
+}
+
+function triggerCelebration() {
+  const name = user === 'george' ? 'George' : 'Olivia';
+  const georgeColor = '#007AFF', oliviaColor = '#FF6B9D';
+  const c1 = user === 'george' ? georgeColor : oliviaColor;
+  const c2 = '#5856D6';
+
+  // Show card
+  document.getElementById('celebTitle').textContent = `All done, ${name}! 🎉`;
+  document.getElementById('celebSub').textContent =
+    'Every task complete. You showed up fully today.';
+  document.getElementById('celebrateOverlay').classList.add('on');
+
+  // Vibrate
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
+
+  // Confetti bursts
+  const duration = 3000;
+  const end = Date.now() + duration;
+  const colors = [c1, c2, '#ffffff', georgeColor, oliviaColor];
+
+  (function burst() {
+    confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 },
+      colors, scalar: 1.1, gravity: 1.2 });
+    confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 },
+      colors, scalar: 1.1, gravity: 1.2 });
+    if (Date.now() < end) requestAnimationFrame(burst);
+  })();
+}
+
+function closeCelebration() {
+  document.getElementById('celebrateOverlay').classList.remove('on');
 }
 
 // ── Notifications ──
