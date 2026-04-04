@@ -18,8 +18,8 @@
   --rika-pink: #ec4899;
   --energy-green: #10b981;
   --warning-amber: #f59e0b;
-  --card-bg: rgba(255,255,255,0.04);
-  --card-border: rgba(255,255,255,0.08);
+  --card-bg: rgba(5,3,20,0.72);
+  --card-border: rgba(255,255,255,0.12);
   --accent: var(--cursed-blue);
   --glow: 0 0 30px rgba(99,102,241,0.15);
 }
@@ -55,7 +55,7 @@ body {
 .header .cursed-label {
   font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
   color: var(--cursed-blue); font-weight: 700; margin-bottom: 8px;
-  text-shadow: 0 0 20px rgba(79,109,245,0.5);
+  text-shadow: 0 0 20px rgba(79,109,245,0.8), 0 1px 6px rgba(0,0,0,1), 0 0 2px rgba(0,0,0,1);
 }
 
 .header h1 {
@@ -63,11 +63,14 @@ body {
   background: linear-gradient(135deg, var(--cursed-blue), var(--cursed-purple), var(--rika-pink));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,1)) drop-shadow(0 0 12px rgba(99,102,241,0.5));
 }
 
 .header .subtitle {
-  font-size: 13px; opacity: 0.5; line-height: 1.5;
+  font-size: 13px; line-height: 1.5;
   max-width: 400px; margin: 0 auto;
+  color: rgba(232,232,240,0.75);
+  text-shadow: 0 1px 5px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.9);
 }
 
 /* ─── Theme Toggle ─── */
@@ -247,8 +250,8 @@ body {
   color: #fff; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
 }
 
-.block-activity { font-size: 13px; font-weight: 500; line-height: 1.5; }
-.person-label { opacity: 0.5; font-size: 11px; }
+.block-activity { font-size: 13px; font-weight: 500; line-height: 1.5; text-shadow: 0 1px 4px rgba(0,0,0,1), 0 0 8px rgba(0,0,0,0.9); }
+.person-label { opacity: 0.65; font-size: 11px; }
 
 .block-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
@@ -468,7 +471,23 @@ body {
 
 /* ─── Particle Canvas ─── */
 #particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
-body > *:not(#particles) { position:relative; z-index:1; }
+body > *:not(#particles):not(#bgImage) { position:relative; z-index:1; }
+
+/* ─── Background Image ─── */
+#bgImage {
+  position: fixed !important; inset: 0;
+  background: url('IMG_0124.jpeg') center top / cover no-repeat;
+  opacity: 0.28;
+  z-index: -1 !important;
+  pointer-events: none;
+}
+
+/* ─── Universal text contrast (readable on white AND black) ─── */
+body {
+  text-shadow:
+    0 1px 4px rgba(0,0,0,0.95),
+    0 0 10px rgba(0,0,0,0.8);
+}
 
 /* ─── Motivation Tab ─── */
 .motiv-hero {
@@ -589,6 +608,7 @@ body > *:not(#particles) { position:relative; z-index:1; }
 </style>
 </head>
 <body data-theme="dark">
+<div id="bgImage"></div>
 <canvas id="particles"></canvas>
 
 <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
