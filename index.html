@@ -513,6 +513,57 @@ body {
   padding: 6px 12px; margin-top: -4px;
 }
 
+/* ── Yuta Motivation Card ── */
+.motiv-card {
+  position: relative; border-radius: 18px; overflow: hidden;
+  min-height: 180px; margin-top: 14px;
+  cursor: pointer; user-select: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.28);
+}
+.motiv-bg {
+  position: absolute; inset: 0;
+  background-image: url('IMG_0124.jpeg');
+  background-size: cover; background-position: center top;
+  filter: brightness(0.62) saturate(0.9);
+}
+.motiv-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, rgba(10,10,20,0.55) 0%, rgba(10,10,40,0.72) 100%);
+}
+.motiv-content {
+  position: relative; z-index: 1; padding: 22px 20px 20px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.motiv-tap-hint {
+  position: absolute; top: 12px; right: 14px; z-index: 1;
+  font-size: 10px; font-weight: 600; letter-spacing: 1.2px;
+  text-transform: uppercase; color: rgba(255,255,255,0.45);
+}
+.motiv-jp {
+  font-size: 22px; font-weight: 700; color: #fff;
+  line-height: 1.35; text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+}
+.motiv-cn {
+  font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.75);
+  line-height: 1.4;
+}
+.motiv-en {
+  font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.55);
+  line-height: 1.4; font-style: italic;
+}
+.motiv-card:active .motiv-bg { filter: brightness(0.72) saturate(1); }
+@keyframes motivFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.motiv-card { animation: motivFadeIn 0.35s ease both; }
+
+/* ── Black Flash canvas ── */
+#bfCanvas {
+  position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none; display: block;
+}
+
 /* ── Quick Pick ── */
 .qp-overlay {
   display: none; position: fixed; inset: 0; z-index: 300;
@@ -584,6 +635,7 @@ body {
 </style>
 </head>
 <body>
+<canvas id="bfCanvas" style="display:none"></canvas>
 
 <!-- ── Login Screen ── -->
 <div id="loginScreen">
@@ -661,6 +713,16 @@ body {
       </div>
       <div id="streakRowToday"></div>
       <div class="tl" id="tlWrap"></div>
+      <div class="motiv-card" id="motivCard" onclick="shuffleYutaQuote()" style="display:none">
+        <div class="motiv-bg"></div>
+        <div class="motiv-overlay"></div>
+        <div class="motiv-tap-hint">Tap to shuffle</div>
+        <div class="motiv-content">
+          <div class="motiv-jp" id="motivJP"></div>
+          <div class="motiv-cn" id="motivCN"></div>
+          <div class="motiv-en" id="motivEN"></div>
+        </div>
+      </div>
     </div>
 
     <div class="tab-panel" id="p-progress">
@@ -1479,6 +1541,7 @@ function renderToday() {
     `<div class="d-pill ${d.key === dayType ? 'on' : ''}" onclick="pickDay('${d.key}')">${d.label}</div>`
   ).join('');
   renderTodayBody();
+  renderMotivCard();
 }
 
 function pickDay(key) {
@@ -1527,7 +1590,13 @@ function toggleExpand(i) {
 }
 function toggleCheck(e, i) {
   e.stopPropagation();
+  const wasChecked = !!checks[i];
   checks[i] = !checks[i];
+  if (!wasChecked) {
+    // Checking (not unchecking) → Black Flash
+    triggerBlackFlash(e.currentTarget);
+    playTickSound();
+  }
   renderTodayBody();
   save();
 }
@@ -1771,6 +1840,129 @@ function playCelebrationChime() {
 
 function closeCelebration() {
   document.getElementById('celebrateOverlay').classList.remove('on');
+}
+
+// ── Yuta Motivation Card ──
+const YUTA_QUOTES = [
+  { jp: '強くなれ。理由はいらない。', cn: '变强吧，不需要理由。', en: 'Get stronger. You need no reason.' },
+  { jp: '俺は最強だ。', cn: '我是最强的。', en: 'I am the strongest.' },
+  { jp: '諦めなければ、夢は叶う。', cn: '只要不放弃，梦想就会实现。', en: "Never give up — your dreams will come true." },
+  { jp: '今日も全力で生きる。', cn: '今天也全力以赴地活着。', en: 'Live today at full power.' },
+  { jp: '恐れるな。恐れは敵だ。', cn: '不要恐惧。恐惧是敌人。', en: 'Do not fear. Fear is the enemy.' },
+  { jp: '前に進め。止まる理由はない。', cn: '向前走，没有停下来的理由。', en: 'Keep moving forward. No reason to stop.' },
+  { jp: '今この瞬間に集中しろ。', cn: '专注于此刻。', en: 'Focus on this moment, right now.' },
+  { jp: '小さな一歩が未来を変える。', cn: '小小的一步改变未来。', en: 'One small step changes everything.' },
+];
+let motivIdx = -1;
+
+function renderMotivCard() {
+  const card = document.getElementById('motivCard');
+  if (!card) return;
+  if (motivIdx < 0) motivIdx = Math.floor(Math.random() * YUTA_QUOTES.length);
+  const q = YUTA_QUOTES[motivIdx];
+  document.getElementById('motivJP').textContent = q.jp;
+  document.getElementById('motivCN').textContent = q.cn;
+  document.getElementById('motivEN').textContent = q.en;
+  card.style.display = '';
+}
+
+function shuffleYutaQuote() {
+  const next = (motivIdx + 1 + Math.floor(Math.random() * (YUTA_QUOTES.length - 1))) % YUTA_QUOTES.length;
+  motivIdx = next;
+  const q = YUTA_QUOTES[motivIdx];
+  // Fade out → update → fade in
+  const content = document.querySelector('.motiv-content');
+  content.style.transition = 'opacity 0.18s';
+  content.style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('motivJP').textContent = q.jp;
+    document.getElementById('motivCN').textContent = q.cn;
+    document.getElementById('motivEN').textContent = q.en;
+    content.style.opacity = '1';
+  }, 180);
+}
+
+// ── Black Flash ──
+function playTickSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.18);
+    setTimeout(() => ctx.close(), 400);
+  } catch(e) {}
+}
+
+function triggerBlackFlash(originEl) {
+  const canvas = document.getElementById('bfCanvas');
+  if (!canvas) return;
+  const rect = originEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top  + rect.height / 2;
+
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+
+  const c2d = canvas.getContext('2d');
+  const sparks = Array.from({ length: 14 }, () => {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3.5 + Math.random() * 4.5;
+    const color = Math.random() < 0.55 ? '#dc2626' : '#f59e0b';
+    const len   = 12 + Math.random() * 18;
+    return { angle, speed, color, len, x: cx, y: cy, life: 1 };
+  });
+
+  let frame = 0;
+  const TOTAL = 26; // ~433ms @ 60fps
+
+  function draw() {
+    c2d.clearRect(0, 0, canvas.width, canvas.height);
+    const t = frame / TOTAL;
+
+    // White circle flash in first 20% of animation
+    if (t < 0.20) {
+      const flashAlpha = (0.20 - t) / 0.20 * 0.85;
+      const flashR = 28 * (t / 0.20);
+      c2d.beginPath();
+      c2d.arc(cx, cy, flashR, 0, Math.PI * 2);
+      c2d.fillStyle = `rgba(255,255,255,${flashAlpha})`;
+      c2d.fill();
+    }
+
+    // Spark lines
+    sparks.forEach(s => {
+      s.x += Math.cos(s.angle) * s.speed;
+      s.y += Math.sin(s.angle) * s.speed;
+      s.life = Math.max(0, 1 - t * 1.4);
+      c2d.beginPath();
+      c2d.moveTo(s.x, s.y);
+      c2d.lineTo(s.x - Math.cos(s.angle) * s.len, s.y - Math.sin(s.angle) * s.len);
+      c2d.strokeStyle = s.color;
+      c2d.globalAlpha = s.life;
+      c2d.lineWidth = 2.2;
+      c2d.lineCap = 'round';
+      c2d.stroke();
+      c2d.globalAlpha = 1;
+    });
+
+    frame++;
+    if (frame < TOTAL) {
+      requestAnimationFrame(draw);
+    } else {
+      c2d.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.style.display = 'none';
+    }
+  }
+
+  requestAnimationFrame(draw);
 }
 
 // ── Notifications ──
