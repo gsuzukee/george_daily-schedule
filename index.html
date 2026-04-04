@@ -8,7 +8,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-database-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script src="https://www.youtube.com/iframe_api"></script>
 <style>
 :root {
   --bg:      #F5F5F7;
@@ -443,40 +442,35 @@ body {
 }
 .celebrate-btn:active { opacity: 0.85; }
 
-/* ── Victory song dismiss button ── */
-#victorySongDismiss {
-  display: none; position: fixed; bottom: 88px; right: 16px; z-index: 450;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 7px 12px;
-  font-size: 12px; font-weight: 600; color: var(--text2);
-  cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  align-items: center; gap: 6px; font-family: inherit;
-}
-#victorySongDismiss.visible { display: flex; }
-#victorySongDismiss:active { opacity: 0.75; }
-
-/* ── YouTube overlay ── */
-#ytOverlay {
+/* ── Video Celebration Overlay ── */
+#videoOverlay {
   display: none; position: fixed; inset: 0; z-index: 480;
-  background: rgba(0,0,0,0.95);
+  background: #000;
   align-items: center; justify-content: center;
 }
-#ytOverlay.on { display: flex; }
-#ytClose {
+#videoOverlay.on { display: flex; }
+#videoClose {
   position: absolute; top: 16px; right: 16px;
   width: 44px; height: 44px; border-radius: 50%; border: none;
-  background: rgba(255,255,255,0.15); color: #fff;
+  background: rgba(255,255,255,0.18); color: #fff;
   font-size: 20px; line-height: 1; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-family: inherit; z-index: 481;
 }
-#ytClose:active { background: rgba(255,255,255,0.3); }
-#ytWrapper {
-  width: calc(100% - 32px); max-width: 560px;
-  aspect-ratio: 16 / 9;
+#videoClose:active { background: rgba(255,255,255,0.35); }
+#celebVideo {
+  width: 100%; height: 100%; object-fit: contain;
 }
-#ytWrapper iframe,
-#ytPlayerDiv { width: 100% !important; height: 100% !important; }
+/* iOS landscape CSS fallback (when webkitEnterFullscreen is unavailable) */
+#videoOverlay.landscape-fallback {
+  overflow: hidden;
+}
+#videoOverlay.landscape-fallback #celebVideo {
+  width: 100vh; height: 100vw;
+  transform: rotate(90deg);
+  transform-origin: center center;
+  object-fit: cover;
+}
 
 /* ── Toast Notifications ── */
 .toast {
@@ -914,18 +908,10 @@ body > *:not(#particles) { position:relative; z-index:1; }
   </defs>
 </svg>
 
-<!-- ── Celebration audio ── -->
-<audio id="celebrationAudio">
-  <source src="victory-song.mp3" type="audio/mpeg">
-</audio>
-
-<!-- ── Victory song dismiss ── -->
-<button id="victorySongDismiss" onclick="stopVictorySong()">♫ Stop</button>
-
-<!-- ── YouTube overlay ── -->
-<div id="ytOverlay">
-  <button id="ytClose" onclick="closeYouTubeOverlay()">✕</button>
-  <div id="ytWrapper"><div id="ytPlayerDiv"></div></div>
+<!-- ── Video Celebration Overlay ── -->
+<div id="videoOverlay">
+  <button id="videoClose" onclick="closeVideoOverlay()">✕</button>
+  <video id="celebVideo" src="celebration-video.mp4" playsinline preload="auto"></video>
 </div>
 
 <!-- ── Celebration ── -->
@@ -1912,8 +1898,8 @@ function triggerCelebration() {
   // Celebration chime — three rising notes (C5 → E5 → G5)
   playCelebrationChime();
 
-  // Show YouTube overlay after confetti fires
-  setTimeout(showYouTubeOverlay, 600);
+  // Show video overlay after confetti fires
+  setTimeout(showVideoOverlay, 600);
 
   // Confetti bursts
   const duration = 3000;
@@ -1955,46 +1941,48 @@ function closeCelebration() {
   document.getElementById('celebrateOverlay').classList.remove('on');
 }
 
-function stopVictorySong() {
-  document.getElementById('victorySongDismiss').classList.remove('visible');
-}
-
-// ── YouTube player ──
-var ytPlayer = null;
-var ytAPIReady = false;
-function onYouTubeIframeAPIReady() { ytAPIReady = true; }
-
-function showYouTubeOverlay() {
-  document.getElementById('ytOverlay').classList.add('on');
-  if (typeof YT !== 'undefined' && YT.Player) {
-    createYTPlayer();
-  } else {
-    const poll = setInterval(() => {
-      if (typeof YT !== 'undefined' && YT.Player) {
-        clearInterval(poll); createYTPlayer();
+// ── Video Celebration Overlay ──
+function showVideoOverlay() {
+  const overlay = document.getElementById('videoOverlay');
+  const video   = document.getElementById('celebVideo');
+  overlay.classList.add('on');
+  video.currentTime = 0;
+  video.muted = false;
+  const p = video.play();
+  if (p !== undefined) {
+    p.then(() => {
+      // Try native iOS fullscreen — auto-rotates to landscape
+      if (typeof video.webkitEnterFullscreen === 'function') {
+        try { video.webkitEnterFullscreen(); } catch(e) {
+          overlay.classList.add('landscape-fallback');
+        }
       }
-    }, 100);
+    }).catch(() => {
+      // Autoplay blocked — play muted first then unmute
+      video.muted = true;
+      video.play().then(() => {
+        video.muted = false;
+        if (typeof video.webkitEnterFullscreen === 'function') {
+          try { video.webkitEnterFullscreen(); } catch(e) {
+            overlay.classList.add('landscape-fallback');
+          }
+        }
+      });
+    });
   }
+  // When iOS exits native fullscreen, close overlay
+  video.addEventListener('webkitendfullscreen', closeVideoOverlay, { once: true });
+  // Auto-close when video ends
+  video.addEventListener('ended', closeVideoOverlay, { once: true });
 }
 
-function createYTPlayer() {
-  if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
-  // Ensure target div exists
-  const wrapper = document.getElementById('ytWrapper');
-  if (!document.getElementById('ytPlayerDiv')) {
-    wrapper.innerHTML = '<div id="ytPlayerDiv"></div>';
-  }
-  ytPlayer = new YT.Player('ytPlayerDiv', {
-    videoId: 'Xr032EhUDPw',
-    playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
-    events: { onReady: e => e.target.playVideo() }
-  });
-}
-
-function closeYouTubeOverlay() {
-  if (ytPlayer) { try { ytPlayer.stopVideo(); ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
-  document.getElementById('ytWrapper').innerHTML = '<div id="ytPlayerDiv"></div>';
-  document.getElementById('ytOverlay').classList.remove('on');
+function closeVideoOverlay() {
+  const overlay = document.getElementById('videoOverlay');
+  const video   = document.getElementById('celebVideo');
+  try { if (document.webkitExitFullscreen) document.webkitExitFullscreen(); } catch(e) {}
+  video.pause();
+  video.currentTime = 0;
+  overlay.classList.remove('on', 'landscape-fallback');
 }
 
 // ── Yuta Motivation Card ──
