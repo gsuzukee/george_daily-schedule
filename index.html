@@ -3,696 +3,466 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>George & Olivia — Daily Blueprint</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<title>Daily Blueprint</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-database-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg: #0a0a12;
-  --bg2: #12121f;
-  --bg3: #1a1a2e;
-  --text: #e8e8f0;
-  --text-muted: #8888a8;
-  --cursed-blue: #4f6df5;
-  --cursed-purple: #7c3aed;
-  --cursed-glow: #6366f1;
-  --rika-pink: #ec4899;
-  --energy-green: #10b981;
-  --warning-amber: #f59e0b;
-  --card-bg: rgba(8,2,8,0.78);
-  --card-border: rgba(255,255,255,0.12);
-  --accent: var(--cursed-blue);
-  --glow: 0 0 30px rgba(99,102,241,0.15);
+  --bg:      #F5F5F7;
+  --bg2:     #FFFFFF;
+  --bg3:     #EBEBF0;
+  --text:    #1D1D1F;
+  --text2:   #86868B;
+  --accent:  #5856D6;
+  --green:   #34C759;
+  --george:  #007AFF;
+  --olivia:  #FF6B9D;
+  --border:  rgba(0,0,0,0.07);
+  --shadow:  0 1px 4px rgba(0,0,0,0.07);
+  --r:       14px;
+  --tab-h:   80px;
 }
 
-[data-theme="light"] {
-  --bg: #f5f3f0;
-  --bg2: #ebe8e4;
-  --bg3: #ddd9d4;
-  --text: #1a1a2e;
-  --text-muted: #6b7280;
-  --card-bg: rgba(255,255,255,0.7);
-  --card-border: rgba(0,0,0,0.08);
-  --glow: 0 0 30px rgba(99,102,241,0.1);
+[data-theme="dark"] {
+  --bg:     #000000;
+  --bg2:    #1C1C1E;
+  --bg3:    #2C2C2E;
+  --text:   #F5F5F7;
+  --text2:  #86868B;
+  --border: rgba(255,255,255,0.09);
+  --shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
 body {
-  font-family: 'Outfit', 'Zen Kaku Gothic New', 'Noto Sans SC', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 20px 16px 100px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg); color: var(--text);
+  max-width: 430px; margin: 0 auto; min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  transition: background 0.4s, color 0.4s;
-  overflow-x: hidden;
 }
 
-/* ─── Header ─── */
-.header {
-  text-align: center; margin-bottom: 24px;
-  background: rgba(5,3,18,0.62);
-  border: 1px solid rgba(255,255,255,0.13);
-  border-radius: 18px;
-  padding: 16px 20px 14px;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-.header .cursed-label {
-  font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
-  color: #a5b4fc; font-weight: 700; margin-bottom: 8px;
-  text-shadow:
-    0 0 1px #fff,
-    0 0 20px rgba(79,109,245,0.9),
-    0 1px 6px rgba(0,0,0,1);
-}
-
-.header h1 {
-  font-size: 28px; font-weight: 800; margin-bottom: 4px;
-  color: #ffffff;
-  text-shadow:
-    0 0 0px #fff,
-    -1px -1px 0 rgba(255,255,255,0.8),
-     1px -1px 0 rgba(255,255,255,0.8),
-    -1px  1px 0 rgba(255,255,255,0.8),
-     1px  1px 0 rgba(255,255,255,0.8),
-    0 0 16px rgba(139,92,246,0.9),
-    0 0 30px rgba(79,109,245,0.6),
-    0 2px 8px rgba(0,0,0,1);
-}
-
-.header .subtitle {
-  font-size: 13px; line-height: 1.5;
-  max-width: 400px; margin: 0 auto;
-  color: rgba(232,232,240,0.9);
-  text-shadow:
-    0 0 1px rgba(255,255,255,0.6),
-    0 1px 5px rgba(0,0,0,1),
-    0 0 12px rgba(0,0,0,0.9);
-}
-
-/* ─── Theme Toggle ─── */
-.theme-toggle {
-  position: fixed; top: 16px; right: 16px; z-index: 100;
-  width: 44px; height: 44px; border-radius: 50%;
-  background: var(--bg3); border: 1.5px solid var(--card-border);
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-size: 20px; transition: all 0.3s;
-  box-shadow: var(--glow);
-}
-.theme-toggle:hover { transform: scale(1.1); }
-
-/* ─── Tabs ─── */
-.tabs {
-  display: flex; gap: 6px; justify-content: center;
-  flex-wrap: wrap; margin-bottom: 20px;
-}
-
-.tab {
-  padding: 8px 14px; border-radius: 99px;
-  border: 1.5px solid var(--card-border);
-  background: var(--card-bg); color: var(--text);
-  font-family: inherit; font-size: 12px; font-weight: 600;
-  cursor: pointer; transition: all 0.25s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tab:hover { border-color: var(--cursed-blue); }
-
-.tab.active {
-  border-color: var(--cursed-blue);
-  background: var(--cursed-blue); color: #fff;
-  box-shadow: 0 0 20px rgba(79,109,245,0.3);
-}
-
-/* ─── Yuta Companion ─── */
-.yuta-bar {
-  background: linear-gradient(135deg, rgba(79,109,245,0.12), rgba(124,58,237,0.08));
-  border: 1.5px solid rgba(79,109,245,0.2);
-  border-radius: 16px; padding: 14px 18px;
-  margin-bottom: 20px; display: flex; align-items: center; gap: 14px;
-  box-shadow: var(--glow); transition: box-shadow 0.4s, transform 0.3s;
-  animation: fadeUp 0.5s ease;
-}
-
-.yuta-bar.energy-spike {
-  box-shadow: 0 0 40px rgba(79,109,245,0.6), 0 0 80px rgba(124,58,237,0.3);
-  transform: scale(1.02);
-}
-
-.yuta-avatar {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #6b8ffb, #7c3aed);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; position: relative;
-  box-shadow: 0 0 20px rgba(99,102,241,0.5), 0 0 40px rgba(99,102,241,0.2);
-  animation: avatarBreathe 3s ease-in-out infinite;
-}
-
-.yuta-avatar svg { width: 26px; height: 26px; }
-
-@keyframes avatarBreathe {
-  0%,100% { box-shadow: 0 0 20px rgba(99,102,241,0.5), 0 0 40px rgba(99,102,241,0.2); }
-  50%      { box-shadow: 0 0 35px rgba(99,102,241,0.8), 0 0 70px rgba(124,58,237,0.4); }
-}
-
-[data-theme="light"] .yuta-avatar {
-  background: radial-gradient(circle at 35% 35%, #fbbf24, #f59e0b);
-  animation: avatarBreatheGold 3s ease-in-out infinite;
-}
-
-@keyframes avatarBreatheGold {
-  0%,100% { box-shadow: 0 0 20px rgba(245,158,11,0.5), 0 0 40px rgba(245,158,11,0.2); }
-  50%      { box-shadow: 0 0 35px rgba(245,158,11,0.9), 0 0 70px rgba(251,191,36,0.4); }
-}
-
-.yuta-text { flex: 1; min-width: 0; }
-.yuta-text .name { font-size: 10px; font-weight: 700; color: var(--cursed-blue); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
-.yuta-text .quote-jp { font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 14px; font-weight: 700; line-height: 1.5; color: var(--text); }
-.yuta-text .quote-cn { font-family: 'Noto Sans SC', sans-serif; font-size: 12px; opacity: 0.6; margin-top: 3px; line-height: 1.4; }
-.yuta-text .quote-en { font-size: 11px; opacity: 0.4; margin-top: 2px; line-height: 1.4; }
-
-/* ─── Progress Ring ─── */
-.progress-section {
-  display: flex; align-items: center; gap: 16px;
-  background: var(--card-bg); border: 1.5px solid var(--card-border);
-  border-radius: 16px; padding: 16px 18px; margin-bottom: 20px;
-  animation: fadeUp 0.5s ease 0.1s both;
-}
-
-.progress-ring-container {
-  flex-shrink: 0; position: relative;
+/* ── Welcome ── */
+.welcome {
   display: flex; flex-direction: column; align-items: center;
-  gap: 6px; overflow: visible; min-width: 90px;
+  justify-content: center; min-height: 100vh; padding: 48px 28px;
+}
+.wlc-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text2); margin-bottom: 14px; }
+.wlc-title { font-size: 36px; font-weight: 700; color: var(--text);
+  margin-bottom: 8px; text-align: center; }
+.wlc-sub { font-size: 17px; color: var(--text2); margin-bottom: 52px; text-align: center; }
+.user-cards { display: flex; gap: 14px; width: 100%; }
+.user-card {
+  flex: 1; background: var(--bg2); border-radius: 20px;
+  border: 1px solid var(--border); padding: 30px 16px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
+  box-shadow: var(--shadow);
+}
+.user-card:active { transform: scale(0.96); }
+.u-avatar {
+  width: 68px; height: 68px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px;
+}
+.u-name { font-size: 18px; font-weight: 700; color: var(--text); }
+.u-role { font-size: 12px; color: var(--text2); text-align: center; }
+
+/* ── App Shell ── */
+.app { display: none; flex-direction: column; min-height: 100vh; }
+.app.on { display: flex; }
+
+/* ── Header ── */
+.hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 12px;
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 50;
+  border-bottom: 1px solid var(--border);
+}
+.hdr-title { font-size: 17px; font-weight: 600; color: var(--text); }
+.hdr-right { display: flex; align-items: center; gap: 8px; }
+
+.theme-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--bg2); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
 }
 
-.cursed-energy-gif {
-  width: 28px; height: 28px;
-  object-fit: contain;
-  opacity: 0;
-  transition: width 0.55s cubic-bezier(0.34,1.56,0.64,1),
-              height 0.55s cubic-bezier(0.34,1.56,0.64,1),
-              filter 0.6s ease,
-              opacity 0.5s ease;
-  filter: brightness(0.7) saturate(1.2);
-  -webkit-mask-image: radial-gradient(ellipse 62% 68% at 50% 50%,
-    black 18%, rgba(0,0,0,0.85) 38%,
-    rgba(0,0,0,0.4) 58%, transparent 76%);
-  mask-image: radial-gradient(ellipse 62% 68% at 50% 50%,
-    black 18%, rgba(0,0,0,0.85) 38%,
-    rgba(0,0,0,0.4) 58%, transparent 76%);
+.chip {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 99px; padding: 5px 12px 5px 7px;
+  cursor: pointer; transition: background 0.15s;
 }
-
-@keyframes gifBurst {
-  0%   { transform: scale(1)           rotate(0deg); }
-  10%  { transform: scaleX(2.1) scaleY(0.55) rotate(-4deg); }
-  25%  { transform: scaleX(0.65) scaleY(1.7)  rotate(3deg);  }
-  42%  { transform: scaleX(1.35) scaleY(0.82) rotate(-2deg); }
-  58%  { transform: scaleX(0.88) scaleY(1.18) rotate(1deg);  }
-  74%  { transform: scaleX(1.08) scaleY(0.95) rotate(0deg);  }
-  100% { transform: scale(1)           rotate(0deg); }
+.chip-av {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
 }
+.chip-name { font-size: 13px; font-weight: 600; color: var(--text); }
 
-.gif-burst { animation: gifBurst 0.65s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+/* ── Tabs ── */
+.tab-content { flex: 1; overflow-y: auto; padding-bottom: calc(var(--tab-h) + 8px); }
+.tab-panel { display: none; padding: 18px 16px; }
+.tab-panel.on { display: block; }
 
-/* Spark particles shot on burst */
-.fire-spark {
-  position: absolute; border-radius: 50%;
-  top: 50%; left: 50%; pointer-events: none; z-index: 20;
+.tab-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px; z-index: 100;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  height: var(--tab-h);
 }
+[data-theme="dark"] .tab-bar { background: rgba(28,28,30,0.88); }
 
-.progress-pct {
-  font-size: 12px; font-weight: 800;
-  color: #fff; white-space: nowrap;
-  background: rgba(5,3,18,0.82);
-  border: 1px solid rgba(99,102,241,0.4);
-  border-radius: 99px; padding: 2px 9px;
-  text-shadow: 0 0 8px var(--cursed-blue);
-  box-shadow: 0 0 10px rgba(99,102,241,0.2);
-  flex-shrink: 0;
+.t-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px;
+  background: none; border: none; cursor: pointer; padding: 8px 4px;
 }
+.t-btn:active { opacity: 0.55; }
+.t-icon { font-size: 22px; line-height: 1; }
+.t-label { font-size: 10px; font-weight: 500; color: var(--text2); }
+.t-btn.on .t-label { color: var(--accent); font-weight: 700; }
 
-.progress-info { flex: 1; }
-.progress-info .label { font-size: 12px; font-weight: 700; color: var(--cursed-blue); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-.progress-info .detail { font-size: 13px; opacity: 0.6; line-height: 1.4; }
-
-/* ─── Schedule Blocks ─── */
-.schedule { display: flex; flex-direction: column; gap: 6px; }
-
-.plan-info {
-  margin-bottom: 14px; padding: 12px 16px; border-radius: 12px;
-  font-size: 13px; line-height: 1.6; animation: fadeUp 0.4s ease;
-  background: var(--card-bg); border: 1.5px solid var(--card-border);
+/* ── Today ── */
+.day-sel {
+  display: flex; gap: 6px; overflow-x: auto;
+  padding-bottom: 14px; margin-bottom: 14px; scrollbar-width: none;
 }
-
-.plan-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; font-size: 12px; }
-.plan-meta .plan-label { font-weight: 700; color: var(--cursed-blue); }
-.plan-meta span { opacity: 0.5; }
-
-.block {
-  border-radius: 14px; padding: 14px 16px;
-  cursor: pointer; transition: all 0.2s;
-  animation: fadeUp 0.4s ease both;
+.day-sel::-webkit-scrollbar { display: none; }
+.d-pill {
+  flex-shrink: 0; padding: 7px 15px; border-radius: 99px;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: var(--bg2); color: var(--text2);
+  transition: all 0.18s; white-space: nowrap;
 }
+.d-pill.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-.block:active { transform: scale(0.985); }
-
-.block-header { display: flex; align-items: center; gap: 10px; }
-.block-icon { font-size: 20px; flex-shrink: 0; }
-.block-content { flex: 1; min-width: 0; }
-.block-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
-.block-time { font-size: 11px; font-weight: 700; flex-shrink: 0; }
-
-.block-type {
-  font-size: 9px; padding: 2px 7px; border-radius: 99px;
-  color: #fff; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+.prog-card {
+  background: var(--bg2); border-radius: var(--r);
+  border: 1px solid var(--border); padding: 16px 18px;
+  margin-bottom: 14px; box-shadow: var(--shadow);
+  transition: background 0.3s;
 }
+.prog-card.done { background: var(--green); border-color: transparent; }
+.prog-lbl { font-size: 11px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+.prog-card.done .prog-lbl { color: rgba(255,255,255,0.75); }
+.prog-num { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.prog-card.done .prog-num { color: #fff; }
+.prog-track { height: 3px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.35s ease; }
+.prog-card.done .prog-fill { background: rgba(255,255,255,0.45); }
 
-.block-activity { font-size: 13px; font-weight: 500; line-height: 1.5; text-shadow: 0 1px 4px rgba(0,0,0,1), 0 0 8px rgba(0,0,0,0.9); }
-.person-label { opacity: 0.65; font-size: 11px; }
-
-.block-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-.check-btn {
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 2px solid var(--card-border); background: transparent;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-size: 14px; transition: all 0.3s; color: var(--text);
+/* ── Timeline ── */
+.tl { display: flex; flex-direction: column; gap: 3px; }
+.tl-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px; background: var(--bg2); border-radius: 12px;
+  border: 1px solid var(--border); cursor: pointer;
+  transition: border-color 0.15s, opacity 0.15s;
 }
-
-.check-btn.done {
-  border-color: var(--energy-green); background: var(--energy-green); color: #fff;
-  box-shadow: 0 0 12px rgba(16,185,129,0.4);
-  animation: checkPop 0.4s ease;
+.tl-item:active { opacity: 0.8; }
+.tl-item.done { opacity: 0.5; }
+.tl-item.open { border-color: var(--accent); }
+.tl-time { font-size: 11px; font-weight: 500; color: var(--text2);
+  min-width: 56px; padding-top: 3px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.tl-ico { font-size: 17px; flex-shrink: 0; padding-top: 1px; }
+.tl-body { flex: 1; min-width: 0; }
+.tl-name { font-size: 15px; font-weight: 500; color: var(--text); line-height: 1.35; }
+.tl-name.done { text-decoration: line-through; color: var(--text2); }
+.tl-note { font-size: 13px; color: var(--text2); margin-top: 8px;
+  line-height: 1.55; display: none; }
+.tl-item.open .tl-note { display: block; }
+.type-tag {
+  font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0;
+  align-self: flex-start; margin-top: 3px;
 }
-
-.block-chevron {
-  font-size: 16px; opacity: 0.25; transition: transform 0.25s; flex-shrink: 0;
+.tp-together { background: rgba(0,122,255,0.10);  color: #007AFF; }
+.tp-solo     { background: rgba(255,149,0,0.12);   color: #FF9500; }
+.tp-work     { background: rgba(134,134,139,0.14); color: #86868B; }
+.tp-late     { background: rgba(88,86,214,0.12);   color: #5856D6; }
+.tp-flex     { background: rgba(255,45,85,0.12);   color: #FF2D55; }
+.chk {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--border); background: none;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; align-self: center; cursor: pointer;
+  transition: all 0.18s; font-size: 13px; color: #fff; font-weight: 700;
 }
-.block-chevron.open { transform: rotate(180deg); }
+.chk.done { background: var(--green); border-color: var(--green); }
 
-.block-note {
-  margin-top: 0; padding-top: 0; font-size: 12px; line-height: 1.6;
-  opacity: 0.7; white-space: pre-line;
-  max-height: 0; overflow: hidden; transition: all 0.35s ease;
+/* ── Progress Tab ── */
+.rng-sel { display: flex; gap: 5px; margin-bottom: 14px; }
+.rng-pill {
+  flex: 1; padding: 7px 4px; text-align: center; font-size: 13px; font-weight: 500;
+  border-radius: 9px; background: var(--bg2); color: var(--text2);
+  border: 1px solid var(--border); cursor: pointer; transition: all 0.15s;
 }
+.rng-pill.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-.block-note.open { max-height: 500px; margin-top: 12px; padding-top: 12px; }
-
-/* ─── Type Colors ─── */
-.type-together { background: rgba(79,109,245,0.08); border: 1.5px solid rgba(79,109,245,0.2); }
-.type-together .block-time { color: var(--cursed-blue); }
-.type-together .block-type { background: var(--cursed-blue); }
-.type-together .block-note { border-top-color: rgba(79,109,245,0.2); }
-
-.type-solo { background: rgba(245,158,11,0.08); border: 1.5px solid rgba(245,158,11,0.2); }
-.type-solo .block-time { color: var(--warning-amber); }
-.type-solo .block-type { background: var(--warning-amber); }
-.type-solo .block-note { border-top-color: rgba(245,158,11,0.2); }
-
-.type-work { background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.06); }
-.type-work .block-time { color: var(--text-muted); }
-.type-work .block-type { background: var(--text-muted); }
-.type-work .block-note { border-top-color: var(--card-border); }
-
-.type-late { background: rgba(124,58,237,0.08); border: 1.5px solid rgba(124,58,237,0.2); }
-.type-late .block-time { color: var(--cursed-purple); }
-.type-late .block-type { background: var(--cursed-purple); }
-.type-late .block-note { border-top-color: rgba(124,58,237,0.2); }
-
-.type-flex { background: rgba(236,72,153,0.08); border: 1.5px solid rgba(236,72,153,0.2); }
-.type-flex .block-time { color: var(--rika-pink); }
-.type-flex .block-type { background: var(--rika-pink); }
-.type-flex .block-note { border-top-color: rgba(236,72,153,0.2); }
-
-/* ─── Rules & Protocols ─── */
-.section-title {
-  font-size: 20px; font-weight: 800; margin: 0 0 8px;
-  color: var(--cursed-blue);
-  text-shadow: 0 0 20px rgba(79,109,245,0.2);
+.chart-card {
+  background: var(--bg2); border-radius: var(--r);
+  border: 1px solid var(--border); padding: 16px;
+  margin-bottom: 14px; box-shadow: var(--shadow);
 }
+.chart-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.chart-ttl { font-size: 15px; font-weight: 600; color: var(--text); }
+.legend { display: flex; gap: 14px; }
+.leg { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text2); }
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-.rule-card {
-  padding: 14px 16px; border-radius: 14px;
-  background: var(--card-bg); border: 1.5px solid var(--card-border);
-  margin-bottom: 8px; animation: fadeUp 0.4s ease both;
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.stat-c {
+  background: var(--bg2); border-radius: var(--r);
+  border: 1px solid var(--border); padding: 14px; box-shadow: var(--shadow);
 }
+.stat-lbl { font-size: 10px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+.stat-row { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.stat-val { font-size: 15px; font-weight: 600; color: var(--text); }
 
-.rule-title { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.rule-title .icon { font-size: 20px; }
-.rule-title .name { font-size: 14px; font-weight: 700; }
-
-.rule-desc { font-size: 12.5px; line-height: 1.6; opacity: 0.7; }
-
-.protocol-card {
-  padding: 14px 16px; border-radius: 14px;
-  background: rgba(16,185,129,0.05); border: 1.5px solid rgba(16,185,129,0.15);
-  margin-bottom: 8px; animation: fadeUp 0.4s ease both;
+/* ── Plans Tab ── */
+.plan-c {
+  background: var(--bg2); border-radius: var(--r);
+  border: 1px solid var(--border); padding: 16px;
+  margin-bottom: 10px; box-shadow: var(--shadow);
+  cursor: pointer; transition: border-color 0.15s;
 }
+.plan-c.open { border-color: var(--accent); }
+.plan-hdr { display: flex; align-items: center; justify-content: space-between; }
+.plan-ttl { font-size: 17px; font-weight: 600; color: var(--text); }
+.plan-times { font-size: 12px; color: var(--text2); margin-top: 3px; }
+.plan-chev { font-size: 11px; color: var(--text2); transition: transform 0.2s; }
+.plan-c.open .plan-chev { transform: rotate(180deg); }
+.plan-body { display: none; margin-top: 12px; }
+.plan-c.open .plan-body { display: block; }
+.plan-desc { font-size: 13px; color: var(--text2); line-height: 1.55; margin-bottom: 12px; }
+.mini-tl { display: flex; flex-direction: column; gap: 7px; }
+.mi { display: flex; gap: 10px; align-items: flex-start; }
+.mi-t { font-size: 11px; color: var(--text2); min-width: 50px;
+  font-variant-numeric: tabular-nums; padding-top: 1px; flex-shrink: 0; }
+.mi-tx { font-size: 13px; color: var(--text); line-height: 1.4; }
 
-.protocol-steps { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
-.protocol-step { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.5; }
-.protocol-step .num { color: var(--energy-green); font-weight: 700; flex-shrink: 0; }
-.protocol-step .text { opacity: 0.7; }
-
-/* ─── Screen Time ─── */
-.screen-time-card {
-  background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(124,58,237,0.08));
-  border: 1.5px solid rgba(236,72,153,0.2);
-  border-radius: 16px; padding: 18px; margin-top: 16px;
-  animation: fadeUp 0.5s ease;
+/* ── Rules Tab ── */
+.sec-hdr { font-size: 20px; font-weight: 700; color: var(--text); margin: 6px 0 12px; }
+.rule-c {
+  background: var(--bg2); border-radius: var(--r);
+  border: 1px solid var(--border); padding: 14px 15px;
+  margin-bottom: 8px; display: flex; gap: 12px; box-shadow: var(--shadow);
 }
-
-.screen-time-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--rika-pink); }
-
-.st-inputs { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-
-.st-input-group { flex: 1; min-width: 120px; }
-.st-input-group label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
-
-.st-input {
-  width: 100%; padding: 10px 14px; border-radius: 10px;
-  border: 1.5px solid var(--card-border); background: var(--card-bg);
-  color: var(--text); font-family: inherit; font-size: 16px; font-weight: 600;
-  text-align: center; outline: none; transition: border-color 0.2s;
+.rule-ico { font-size: 20px; flex-shrink: 0; }
+.rule-ttl { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.rule-dsc { font-size: 13px; color: var(--text2); line-height: 1.5; }
+.proto-c {
+  background: var(--bg2); border-radius: var(--r);
+  border: 1px solid var(--border); padding: 14px 15px;
+  margin-bottom: 8px; cursor: pointer; box-shadow: var(--shadow);
+  transition: border-color 0.15s;
 }
-.st-input:focus { border-color: var(--rika-pink); }
-
-.st-result {
-  text-align: center; font-size: 14px; font-weight: 600;
-  padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.03);
-  min-height: 40px; display: flex; align-items: center; justify-content: center;
+.proto-c.open { border-color: var(--accent); }
+.proto-hdr { display: flex; align-items: center; justify-content: space-between; }
+.proto-left { display: flex; align-items: center; gap: 9px; }
+.proto-ttl { font-size: 15px; font-weight: 600; color: var(--text); }
+.proto-steps { display: none; margin-top: 10px; }
+.proto-c.open .proto-steps { display: block; }
+.proto-step { display: flex; gap: 8px; font-size: 13px; color: var(--text2);
+  line-height: 1.5; padding: 3px 0; }
+.proto-step::before { content: '→'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+.dec-c {
+  background: var(--bg2); border-radius: var(--r);
+  border: 1px solid var(--border); padding: 13px 15px;
+  margin-bottom: 8px; box-shadow: var(--shadow);
 }
+.dec-q { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.dec-a { font-size: 13px; color: var(--text2); }
 
-/* ─── Decision Tree ─── */
-.decision-card {
-  margin-top: 16px; padding: 20px; border-radius: 16px;
-  background: linear-gradient(135deg, rgba(79,109,245,0.08), rgba(124,58,237,0.08));
-  border: 1.5px solid rgba(79,109,245,0.2);
-  box-shadow: var(--glow);
+/* ── Sheet ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35); z-index: 200;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  align-items: flex-end;
 }
+.overlay.on { display: flex; }
+.sheet {
+  background: var(--bg2); border-radius: 24px 24px 0 0;
+  padding: 20px 20px calc(env(safe-area-inset-bottom) + 24px);
+  width: 100%; max-width: 430px; margin: 0 auto;
+}
+.sheet-ttl { font-size: 12px; font-weight: 700; color: var(--text2);
+  text-align: center; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 1px; }
+.sheet-users { display: flex; gap: 12px; }
+.sh-user {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 8px; border-radius: 16px; background: var(--bg3);
+  cursor: pointer; transition: all 0.18s; border: 2px solid transparent;
+}
+.sh-user:active { transform: scale(0.97); }
+.sh-user.on { background: var(--bg2); border-color: var(--accent); }
+.sh-av {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: #fff;
+}
+.sh-name { font-size: 15px; font-weight: 600; color: var(--text); }
 
-.decision-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--cursed-blue); }
-.tree-item { font-size: 13px; line-height: 1.8; opacity: 0.8; margin-bottom: 6px; }
-
-/* ─── Domain Expansion Overlay ─── */
-.domain-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  z-index: 9999; display: none; align-items: center; justify-content: center;
-  background: #000;
+/* ── Anim ── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
 }
-.domain-overlay.active { display: flex; }
-
-#domainCanvas {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none;
-}
-
-.domain-content {
-  position: relative; z-index: 2;
-  text-align: center; padding: 40px 24px;
-  opacity: 0; transition: opacity 0.5s;
-}
-.domain-content.visible { opacity: 1; }
-
-.domain-announce {
-  font-family: 'Zen Kaku Gothic New', sans-serif;
-  font-size: 48px; font-weight: 700; letter-spacing: 8px;
-  color: #fff; margin-bottom: 20px;
-  text-shadow: 0 0 40px rgba(99,102,241,1), 0 0 80px rgba(99,102,241,0.5);
-  opacity: 0; transform: scale(2.5) translateY(-10px); filter: blur(8px);
-  transition: opacity 0.6s ease, transform 0.6s ease, filter 0.6s ease;
-}
-.domain-announce.snap { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
-
-.domain-main {
-  font-family: 'Zen Kaku Gothic New', sans-serif;
-  font-size: 32px; font-weight: 800; margin-bottom: 12px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899, #6366f1);
-  background-size: 300% 300%;
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradientShift 3s ease infinite;
-  opacity: 0; transform: translateY(16px);
-  transition: opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s;
-}
-.domain-main.show { opacity: 1; transform: translateY(0); }
-
-.domain-sub-jp {
-  font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 17px;
-  color: #a5b4fc; margin-bottom: 6px;
-  text-shadow: 0 0 20px rgba(99,102,241,0.5);
-  opacity: 0; transform: translateY(10px);
-  transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
-}
-.domain-sub-cn {
-  font-family: 'Noto Sans SC', sans-serif; font-size: 14px;
-  opacity: 0; color: #c4b5fd; margin-bottom: 4px;
-  transform: translateY(10px);
-  transition: opacity 0.4s ease 0.35s, transform 0.4s ease 0.35s;
-}
-.domain-sub-en {
-  font-size: 12px; color: rgba(232,232,240,0.45); margin-bottom: 28px;
-  opacity: 0; transform: translateY(10px);
-  transition: opacity 0.4s ease 0.5s, transform 0.4s ease 0.5s;
-}
-.domain-sub-jp.show, .domain-sub-cn.show, .domain-sub-en.show {
-  opacity: 1; transform: translateY(0);
-}
-.domain-sub-cn.show { opacity: 0.65; }
-
-.domain-close {
-  padding: 12px 28px; border-radius: 50px;
-  border: 1.5px solid rgba(99,102,241,0.6);
-  background: rgba(99,102,241,0.08); color: #a5b4fc;
-  font-family: 'Zen Kaku Gothic New', sans-serif;
-  font-size: 13px; font-weight: 700; cursor: pointer;
-  letter-spacing: 3px;
-  box-shadow: 0 0 20px rgba(99,102,241,0.2), inset 0 0 20px rgba(99,102,241,0.05);
-  transition: all 0.3s;
-  opacity: 0; transform: translateY(10px);
-  transition: opacity 0.4s ease 0.65s, transform 0.4s ease 0.65s, background 0.3s, box-shadow 0.3s;
-}
-.domain-close.show { opacity: 1; transform: translateY(0); }
-.domain-close:hover {
-  background: rgba(99,102,241,0.25);
-  box-shadow: 0 0 30px rgba(99,102,241,0.5);
-}
-
-/* ─── Animations ─── */
-@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-@keyframes pulse { 0%,100% { box-shadow: 0 0 15px rgba(99,102,241,0.4); } 50% { box-shadow: 0 0 25px rgba(99,102,241,0.7); } }
-@keyframes checkPop { 0% { transform:scale(1); } 50% { transform:scale(1.3); } 100% { transform:scale(1); } }
-@keyframes domainExpand { 0% { opacity:0; transform:scale(0.5); } 50% { opacity:1; transform:scale(1.05); } 100% { transform:scale(1); } }
-@keyframes flicker { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
-@keyframes gradientShift { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
-
-/* ─── Particle Canvas ─── */
-#particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
-body > *:not(#particles):not(#bgImage) { position:relative; z-index:1; }
-
-/* ─── Background Image ─── */
-#bgImage {
-  position: fixed !important; inset: 0;
-  background: url('maki.gif') center center / cover no-repeat;
-  opacity: 0.42;
-  z-index: -1 !important;
-  pointer-events: none;
-}
-
-/* ─── Universal text contrast (readable on white AND black) ─── */
-body {
-  text-shadow:
-    0 1px 5px rgba(0,0,0,1),
-    0 0 12px rgba(0,0,0,0.9),
-    0 2px 8px rgba(0,0,0,0.85);
-}
-
-/* ─── Motivation Tab ─── */
-.motiv-hero {
-  position: relative; border-radius: 20px; overflow: hidden;
-  margin-bottom: 20px; min-height: 320px;
-  display: flex; flex-direction: column; justify-content: flex-end;
-  animation: fadeUp 0.5s ease;
-}
-
-.motiv-hero-img {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; object-position: center top;
-  opacity: 0.35;
-}
-
-.motiv-hero-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(5,3,18,0.75) 60%, rgba(5,3,18,0.97) 100%);
-}
-
-.motiv-hero-content {
-  position: relative; z-index: 2; padding: 28px 22px 24px;
-  text-align: center;
-}
-
-.motiv-label {
-  font-family: 'Zen Kaku Gothic New', sans-serif;
-  font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
-  color: var(--cursed-blue); font-weight: 700; margin-bottom: 16px;
-  text-shadow: 0 0 20px rgba(79,109,245,0.8);
-}
-
-.motiv-mission-jp {
-  font-family: 'Zen Kaku Gothic New', sans-serif;
-  font-size: 20px; font-weight: 700; line-height: 1.6;
-  color: #fff; margin-bottom: 8px;
-  text-shadow: 0 0 30px rgba(99,102,241,0.9), 0 0 60px rgba(99,102,241,0.4);
-}
-
-.motiv-mission-cn {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 14px; line-height: 1.6; color: #a5b4fc;
-  margin-bottom: 6px;
-  text-shadow: 0 0 20px rgba(99,102,241,0.6);
-}
-
-.motiv-mission-en {
-  font-size: 12px; color: rgba(232,232,240,0.5); line-height: 1.6;
-  font-style: italic;
-}
-
-.motiv-card {
-  border-radius: 16px; padding: 18px;
-  background: var(--card-bg); border: 1.5px solid var(--card-border);
-  margin-bottom: 10px; animation: fadeUp 0.4s ease both;
-}
-
-.motiv-card-label {
-  font-size: 9px; font-weight: 700; letter-spacing: 3px;
-  text-transform: uppercase; color: var(--cursed-blue);
-  margin-bottom: 10px;
-}
-
-.motiv-card-jp {
-  font-family: 'Zen Kaku Gothic New', sans-serif;
-  font-size: 15px; font-weight: 700; line-height: 1.6;
-  color: var(--text); margin-bottom: 6px;
-  text-shadow: 0 0 20px rgba(99,102,241,0.3);
-}
-
-.motiv-card-cn {
-  font-family: 'Noto Sans SC', sans-serif;
-  font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 4px;
-}
-
-.motiv-card-en {
-  font-size: 11.5px; color: var(--text-muted); line-height: 1.6; opacity: 0.7;
-}
-
-.motiv-card.blue  { border-color: rgba(79,109,245,0.25);  background: rgba(79,109,245,0.06); }
-.motiv-card.purple{ border-color: rgba(124,58,237,0.25);  background: rgba(124,58,237,0.06); }
-.motiv-card.pink  { border-color: rgba(236,72,153,0.25);  background: rgba(236,72,153,0.06); }
-.motiv-card.green { border-color: rgba(16,185,129,0.25);  background: rgba(16,185,129,0.06); }
-
-.motiv-card.blue  .motiv-card-label { color: var(--cursed-blue); }
-.motiv-card.purple .motiv-card-label { color: #a78bfa; }
-.motiv-card.pink  .motiv-card-label { color: var(--rika-pink); }
-.motiv-card.green .motiv-card-label { color: var(--energy-green); }
-
-/* ─── Black Flash ─── */
-.check-btn-wrap { position:relative; display:inline-flex; align-items:center; justify-content:center; }
-
-@keyframes bfScreen {
-  0%   { opacity:0.6; }
-  100% { opacity:0; }
-}
-@keyframes bfLabel {
-  0%   { opacity:0; transform:translate(-50%,-230%) scale(1.5); }
-  20%  { opacity:1; transform:translate(-50%,-230%) scale(1); }
-  70%  { opacity:1; }
-  100% { opacity:0; transform:translate(-50%,-230%) scale(0.7); }
-}
-
-.bf-screen {
-  position:fixed; inset:0; background:#000;
-  pointer-events:none; z-index:9990;
-  animation:bfScreen 0.4s ease-out forwards;
-}
-.bf-label {
-  position:absolute; top:50%; left:50%;
-  font-family:'Zen Kaku Gothic New', sans-serif;
-  font-size:17px; font-weight:700;
-  color:#cc0000; white-space:nowrap;
-  text-shadow:0 0 14px rgba(255,0,0,1), 0 0 28px rgba(200,0,0,0.7);
-  pointer-events:none; z-index:9992;
-  animation:bfLabel 0.8s ease-out forwards;
-}
+.fu { animation: fadeUp 0.28s ease both; }
 </style>
 </head>
-<body data-theme="dark">
-<div id="bgImage"></div>
-<canvas id="particles"></canvas>
+<body>
 
-<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
-
-<div class="header">
-  <div class="cursed-label">✦ Daily Blueprint ✦</div>
-  <h1>George & Olivia</h1>
-  <div class="subtitle">Pick your day type. Everything gets done — the only question is when.</div>
-</div>
-
-<div class="yuta-bar" id="yutaBar">
-  <div class="yuta-avatar">
-    <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <line x1="13" y1="3" x2="13" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
-      <line x1="9" y1="12" x2="17" y2="12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-      <circle cx="13" cy="21.5" r="1.5" fill="white" opacity="0.7"/>
-      <line x1="13" y1="1" x2="11" y2="4" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
-      <line x1="13" y1="1" x2="15" y2="4" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
-    </svg>
-  </div>
-  <div class="yuta-text">
-    <div class="name">Okkotsu Yuta · 乙骨憂太</div>
-    <div class="quote-jp" id="yutaQuoteJp"></div>
-    <div class="quote-cn" id="yutaQuoteCn"></div>
-    <div class="quote-en" id="yutaQuoteEn"></div>
+<!-- ── Welcome ── -->
+<div class="welcome" id="welcome">
+  <div class="wlc-eyebrow">Daily Blueprint</div>
+  <div class="wlc-title">Good morning ☀️</div>
+  <div class="wlc-sub">Who's checking in?</div>
+  <div class="user-cards">
+    <div class="user-card" onclick="selectUser('george')">
+      <div class="u-avatar" style="background:#007AFF">G</div>
+      <div class="u-name">George</div>
+      <div class="u-role">Uber Eats AE</div>
+    </div>
+    <div class="user-card" onclick="selectUser('olivia')">
+      <div class="u-avatar" style="background:#FF6B9D">O</div>
+      <div class="u-name">Olivia</div>
+      <div class="u-role">Stripe SWE</div>
+    </div>
   </div>
 </div>
 
-<div class="progress-section" id="progressSection">
-  <div class="progress-ring-container">
-    <img id="cursedEnergyGif" class="cursed-energy-gif" src="cursed-energy.gif" alt="Cursed Energy">
-    <div class="progress-pct" id="progressPct">0%</div>
+<!-- ── App ── -->
+<div class="app" id="app">
+  <div class="hdr">
+    <div class="hdr-title" id="hdrTitle">Today</div>
+    <div class="hdr-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+      <div class="chip" onclick="openSheet()">
+        <div class="chip-av" id="chipAv"></div>
+        <div class="chip-name" id="chipName"></div>
+      </div>
+    </div>
   </div>
-  <div class="progress-info">
-    <div class="label">Today's Cursed Energy</div>
-    <div class="detail" id="progressDetail">Complete tasks to power up</div>
+
+  <div class="tab-content">
+    <div class="tab-panel on" id="p-today">
+      <div class="day-sel" id="daySel"></div>
+      <div class="prog-card" id="progCard">
+        <div class="prog-lbl">Today's Progress</div>
+        <div class="prog-num" id="progNum">—</div>
+        <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+      <div class="tl" id="tlWrap"></div>
+    </div>
+
+    <div class="tab-panel" id="p-progress">
+      <div class="rng-sel" id="rngSel"></div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div class="chart-ttl">Completion %</div>
+          <div class="legend">
+            <div class="leg"><div class="leg-dot" style="background:#007AFF"></div>George</div>
+            <div class="leg"><div class="leg-dot" style="background:#FF6B9D"></div>Olivia</div>
+          </div>
+        </div>
+        <canvas id="chart" height="190"></canvas>
+      </div>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="chart-card">
+        <div class="chart-ttl" style="margin-bottom:10px">Day Type Breakdown</div>
+        <div id="dtBreakdown"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-plans">
+      <div id="plansWrap"></div>
+    </div>
+
+    <div class="tab-panel" id="p-rules">
+      <div id="rulesWrap"></div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="t-btn on" id="tb-today" onclick="goTab('today')">
+      <span class="t-icon">📋</span><span class="t-label">Today</span>
+    </button>
+    <button class="t-btn" id="tb-progress" onclick="goTab('progress')">
+      <span class="t-icon">📊</span><span class="t-label">Progress</span>
+    </button>
+    <button class="t-btn" id="tb-plans" onclick="goTab('plans')">
+      <span class="t-icon">🗓</span><span class="t-label">Plans</span>
+    </button>
+    <button class="t-btn" id="tb-rules" onclick="goTab('rules')">
+      <span class="t-icon">📌</span><span class="t-label">Rules</span>
+    </button>
   </div>
 </div>
 
-<div class="tabs" id="tabs"></div>
-<div id="content"></div>
-
-<div class="domain-overlay" id="domainOverlay">
-  <canvas id="domainCanvas"></canvas>
-  <div class="domain-content" id="domainContent">
-    <div class="domain-announce" id="domainAnnounce">領域展開</div>
-    <div class="domain-main" id="domainMain">完全勝利</div>
-    <div class="domain-sub-jp" id="domainJp"></div>
-    <div class="domain-sub-cn" id="domainCn"></div>
-    <div class="domain-sub-en" id="domainEn"></div>
-    <button class="domain-close" id="domainCloseBtn" onclick="closeDomain()">— 縛りの誓い —</button>
+<!-- ── User Sheet ── -->
+<div class="overlay" id="overlay" onclick="maybeCloseSheet(event)">
+  <div class="sheet">
+    <div class="sheet-ttl">Switch User</div>
+    <div class="sheet-users">
+      <div class="sh-user" id="shG" onclick="selectUser('george')">
+        <div class="sh-av" style="background:#007AFF">G</div>
+        <div class="sh-name">George</div>
+      </div>
+      <div class="sh-user" id="shO" onclick="selectUser('olivia')">
+        <div class="sh-av" style="background:#FF6B9D">O</div>
+        <div class="sh-name">Olivia</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-// ─── Data ───
-const TABS=[{key:"earlyNormal",label:"Early Day"},{key:"earlyClimb",label:"Early + Climb/Dance"},{key:"lateNormal",label:"Late Day"},{key:"lateClimb",label:"Late + Climb/Dance"},{key:"friday",label:"Friday"},{key:"protocols",label:"Rules & Protocols"},{key:"motivation",label:"✦ Motivation"}];
+// ── Firebase ──
+const firebaseConfig = {
+  apiKey: "AIzaSyDyyk4tqU2SAlKEo8a22M-AIRc7POaJmos",
+  authDomain: "daily-blueprint-33a66.firebaseapp.com",
+  databaseURL: "https://daily-blueprint-33a66-default-rtdb.firebaseio.com",
+  projectId: "daily-blueprint-33a66",
+  storageBucket: "daily-blueprint-33a66.firebasestorage.app",
+  messagingSenderId: "555629581579",
+  appId: "1:555629581579:web:74c9df5e717b11e49f3e0e"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-const TYPE_MAP={together:{cls:"type-together",label:"Together"},solo:{cls:"type-solo",label:"Individual"},work:{cls:"type-work",label:"Work"},late:{cls:"type-late",label:"Late Day"},flex:{cls:"type-flex",label:"Activity"}};
+// ── Schedule Data ──
+const DAY_TYPES = [
+  { key:'earlyNormal', label:'Early Day' },
+  { key:'earlyClimb',  label:'Early + Climb' },
+  { key:'lateNormal',  label:'Late Day' },
+  { key:'lateClimb',   label:'Late + Climb' },
+  { key:'friday',      label:'Friday' },
+];
 
-const PLAN_INFO={earlyNormal:{label:"Early Day",wake:"6:00 AM",sleep:"~9:30 PM",hours:"~8 hrs",desc:"Gym + career growth morning. George cooks. Evening: journal, guitar, anime."},earlyClimb:{label:"Early + Climb/Dance",wake:"6:00 AM",sleep:"~10:15 PM",hours:"~7.75 hrs",desc:"No gym — deep career block (~1h40m). Evening: activity, ordered food, journal, guitar, anime."},lateNormal:{label:"Late Day",wake:"8:00 AM",sleep:"~10:30–10:45 PM",hours:"~7–9 hrs",desc:"Nothing before work. Gym after work, George cooks. Evening: career growth, journal, guitar, anime."},lateClimb:{label:"Late + Climb/Dance",wake:"8:00 AM",sleep:"~10:45–11 PM",hours:"~7–9 hrs",desc:"Nothing before work. Activity after work. Ordered food. Career growth, journal, guitar, anime."},friday:{label:"Friday",wake:"6:00 AM",sleep:"Cap 1:30 AM",hours:"Flexible",desc:"Always early. Front-load gym + career growth. Evening 100% free."}};
+const PLAN_INFO = {
+  earlyNormal: { wake:'6:00 AM', sleep:'~9:30 PM',        desc:'Gym + career growth morning. George cooks. Evening: journal, guitar, anime.' },
+  earlyClimb:  { wake:'6:00 AM', sleep:'~10:15 PM',       desc:'No gym — deep career block (~1h 40m). Activity after work. Ordered food. Guitar, anime.' },
+  lateNormal:  { wake:'8:00 AM', sleep:'~10:30–10:45 PM', desc:'Nothing before work. Gym after work. George cooks. Career growth, journal, guitar, anime.' },
+  lateClimb:   { wake:'8:00 AM', sleep:'~10:45–11:00 PM', desc:'Nothing before work. Activity after work. Ordered food. Career, journal, guitar, anime.' },
+  friday:      { wake:'6:00 AM', sleep:'Cap 1:30 AM',     desc:'Always early. Front-load gym + career growth. Evening 100% free.' },
+};
 
-const S={
+const S = {
 earlyNormal:[
 {t:"6:00 AM",g:"Wake up together",o:"Wake up together",i:"☀️",tp:"together",n:"Phones across the room — you must get up to silence the alarm."},
 {t:"6:00–6:10",g:"Morning reset",o:"Morning reset",i:"🫧",tp:"together",n:"Splash water, brush teeth, gym clothes."},
@@ -767,893 +537,377 @@ friday:[
 {t:"Bedtime",g:"Sleep whenever (cap 1:30 AM)",o:"Sleep whenever (cap 1:30 AM)",i:"🌙",tp:"flex",n:"Your release valve. Cap 1:30 AM → up by 10 AM Saturday."}
 ]};
 
-const YUTA_QUOTES=[
-{en:"The strength to protect someone — that's real cursed energy. Protect your schedule today.",jp:"誰かを守る力——それが本当の呪力だ。今日のスケジュールを守ろう。",cn:"保护某人的力量——那才是真正的咒力。今天也守护好你的计划。"},
-{en:"I'll get stronger. So strong that even my regrets can't hold me back.",jp:"もっと強くなる。後悔に負けないくらいに。",cn:"我会变得更强。强到连遗憾都无法阻止我。"},
-{en:"Don't let yesterday's exhaustion steal today's potential.",jp:"昨日の疲れに今日の可能性を奪わせるな。",cn:"别让昨天的疲惫偷走今天的可能性。"},
-{en:"Even the strongest sorcerers started by showing up. Get to the gym.",jp:"最強の術師も、まず一歩を踏み出すことから始まった。ジムに行こう。",cn:"即使是最强的术师，也是从迈出第一步开始的。去健身房吧。"},
-{en:"Rika and I didn't give up. Neither should you.",jp:"リカと僕は諦めなかった。君たちも諦めるな。",cn:"里香和我没有放弃。你们也不要放弃。"},
-{en:"Cursed energy flows strongest when two people sync. You've got the buddy system.",jp:"呪力は二人が同期する時に最も強く流れる。バディシステムを使え。",cn:"当两个人同步时，咒力流动最强。好好利用你们的伙伴系统。"},
-{en:"Cooking dinner isn't a chore — it's training. Every sorcerer fuels their body.",jp:"夕食を作ることは雑用じゃない——訓練だ。術師は体に燃料を与える。",cn:"做晚餐不是杂活——是修炼。每个术师都需要给身体补充能量。"},
-{en:"Put the phone down. That blue light is a cursed technique working against you.",jp:"スマホを置け。あのブルーライトはお前に対する呪術だ。",cn:"放下手机。蓝光是在对你施展诅咒。"},
-{en:"Sunday Reset is your binding vow for the week. Honor it.",jp:"日曜リセットは一週間の縛りの誓い。それを守れ。",cn:"周日重置是你对这一周的束缚之誓。请遵守它。"},
-{en:"A late day isn't a failure. Even Special Grade sorcerers need rest. But they always come back stronger.",jp:"遅い日は失敗じゃない。特級術師でも休息が必要だ。でも必ず強くなって戻る。",cn:"晚起的一天不是失败。即使是特级术师也需要休息。但他们总是更强地回来。"},
+const RULES = [
+  {t:"The Phone Rule",i:"📵",d:"Phones charge across the room overnight. You physically get up to silence the alarm."},
+  {t:"The Kitchen Rule",i:"🍳",d:"George: on cooking nights, walk in → kitchen. Late days: gym first, then kitchen. No couch."},
+  {t:"The Buddy System",i:"🤝",d:"Wake up together, gym together, bed together. If one can't, the other still goes."},
+  {t:"Early & Late Are Equal",i:"⚖️",d:"Neither is 'better.' Both get everything done. Pick what fits today."},
+  {t:"Late = Protect Tasks, Not Sleep",i:"🌙",d:"On late days, everything still gets done. You stay up later. Sleep flexes, not goals."},
+  {t:"The Sunday Reset",i:"🔄",d:"Every Sunday, 30 min: climbing/dance day, WFH days, restaurant visits, meal plan."},
+  {t:"The Bedtime Pact",i:"😴",d:"Go to bed together every weeknight — early or late."},
+  {t:"Friday = Early + Free Night",i:"🌟",d:"Friday morning: always early. Evening: 100% free."},
+  {t:"Weekend Body Clock",i:"🕐",d:"Fri/Sat: bed by 1:30 AM, up by 10 AM. Sunday night: back to weekday bedtime."},
+];
+const PROTOCOLS = [
+  {t:"Can't fall asleep",i:"🌙",s:["Don't stress.","Still awake 30 min later? Get up, do something boring 15 min.","No phones.","Tomorrow: late day.","2+ nights: no caffeine after 2 PM."]},
+  {t:"Dinner running late",i:"🍳",s:["Not home by 5:30? Order food.","Gym ran long? Order food.","After 7:30? Skip anime tonight.","Sunday meal prep helps."]},
+  {t:"One has energy, other doesn't",i:"🤝",s:["Energized person leads gently.","Tired person: 15 min commitment.","If one can't, other still goes.","Discuss at Sunday Reset."]},
+  {t:"Phone / scrolling relapse",i:"📱",s:["Phones across room. Non-negotiable.","Stand up immediately.","App timers: 15 min after 8 PM.","George: kitchen, not couch.","Code word: 'Hey, should we [next thing]?'"]},
+  {t:"Restaurant visit (George home ~7 PM)",i:"🍜",s:["Order food.","Olivia: use 5:30–7 for guitar/career/rest.","Eat together at 7. Evening from 7:45."]},
+  {t:"Missed guitar (Olivia)",i:"🎸",s:["Primary: after shower.","Missed? Don't stress.","Aim 5/7 days.","Tight nights: guitar can be cut."]},
+  {t:"Choosing early vs late",i:"🤔",s:["Decide before bed.","Early: alarm 6, gym clothes out.","Late: alarm 8. No guilt.","Default early.","Sunday Reset: rough-plan the week."]},
+];
+const DECISION = [
+  {l:"Friday?",v:"Always Friday plan — early morning, free evening."},
+  {l:"Climbing/dance tonight?",v:"Early + Climb or Late + Climb."},
+  {l:"Regular day?",v:"Early Day or Late Day."},
+  {l:"Early or late?",v:"Decide the night before. Default early."},
+  {l:"Late days:",v:"Everything gets done. Sleep later."},
+  {l:"Weekends:",v:"No set schedule. Bed by 1:30 AM, up by 10 AM. Sunday: back to weekday."},
 ];
 
-const TASK_CHEERS=[
-{en:"Cursed energy rising!",jp:"呪力上昇中！",cn:"咒力上升中！"},
-{en:"That's Special Grade energy right there.",jp:"それこそ特級の力だ。",cn:"这就是特级的力量。"},
-{en:"Rika would be proud.",jp:"リカも誇りに思うだろう。",cn:"里香也会为你骄傲的。"},
-{en:"Domain expanding, one task at a time.",jp:"領域展開、一つずつ。",cn:"领域展开，一步一步来。"},
-{en:"Your cursed technique is consistency. Keep going.",jp:"お前の呪術は継続だ。続けろ。",cn:"你的咒术就是坚持。继续前进。"},
-{en:"Unlimited energy flows through you.",jp:"無限の力がお前に流れる。",cn:"无限的力量在你体内流动。"},
-];
+// ── State ──
+let user = null;
+let dayType = 'earlyNormal';
+let checks = {};
+let expanded = {};
+let activeTab = 'today';
+let chartInst = null;
+let range = '1W';
+let todayKey = new Date().toISOString().split('T')[0];
+let fbOff = null;
 
-const DOMAIN_MSGS=[
-{main:"完全勝利",jp:"全タスク完了！今日の領域を展開した！",cn:"所有任务完成！今天的领域已展开！",en:"All tasks complete. Domain fully expanded."},
-{main:"無量空処",jp:"怠惰の呪いを打ち破った！",cn:"打破了懒惰的诅咒！",en:"You've broken through the curse of laziness."},
-{main:"特級覚醒",jp:"George と Olivia、特級に昇格！",cn:"George 和 Olivia，晋升为特级！",en:"George & Olivia have ascended to Special Grade."},
-];
-
-const RULES=[
-{t:"The Phone Rule",i:"📵",d:"Phones charge across the room overnight. You physically get up to silence the alarm."},
-{t:"The Kitchen Rule",i:"🍳",d:"George: on cooking nights, walk in → kitchen. Late days: gym first, then kitchen. No couch."},
-{t:"The Buddy System",i:"🤝",d:"Wake up together, gym together, bed together. If one can't, the other still goes."},
-{t:"Early & Late Are Equal",i:"⚖️",d:"Neither is 'better.' Both get everything done. Pick what fits today."},
-{t:"Late = Protect Tasks, Not Sleep",i:"🌙",d:"On late days, everything still gets done. You stay up later. Sleep flexes, not goals."},
-{t:"The Sunday Reset",i:"🔄",d:"Every Sunday, 30 min: climbing/dance day, WFH days, restaurant visits, meal plan."},
-{t:"The Bedtime Pact",i:"😴",d:"Go to bed together every weeknight — early or late."},
-{t:"Friday = Early + Free Night",i:"🌟",d:"Friday morning: always early. Evening: 100% free."},
-{t:"Weekend Body Clock",i:"🕐",d:"Fri/Sat: bed by 1:30 AM, up by 10 AM. Sunday night: back to weekday bedtime."},
-];
-
-const PROTOCOLS=[
-{t:"Can't fall asleep",i:"🌙",s:["Don't stress.","Still awake 30 min later? Get up, do something boring 15 min.","No phones.","Tomorrow: late day.","2+ nights: no caffeine after 2 PM."]},
-{t:"Dinner running late",i:"🍳",s:["Not home by 5:30? Order food.","Gym ran long? Order food.","After 7:30? Skip anime tonight.","Sunday meal prep helps."]},
-{t:"One has energy, other doesn't",i:"🤝",s:["Energized person leads gently.","Tired person: 15 min commitment.","If one can't, other still goes.","Discuss at Sunday Reset."]},
-{t:"Phone / scrolling relapse",i:"📱",s:["Phones across room. Non-negotiable.","Stand up immediately.","App timers: 15 min after 8 PM.","George: kitchen, not couch.","Code word: 'Hey, should we [next thing]?'"]},
-{t:"Restaurant visit (George home ~7 PM)",i:"🍜",s:["Order food.","Olivia: use 5:30–7 for guitar/career/rest.","Eat together at 7. Evening from 7:45."]},
-{t:"Missed guitar (Olivia)",i:"🎸",s:["Primary: after shower.","Missed? Don't stress.","Aim 5/7 days.","Tight nights: guitar can be cut."]},
-{t:"Choosing early vs late",i:"🤔",s:["Decide before bed.","Early: alarm 6, gym clothes out.","Late: alarm 8. No guilt.","Default early.","Sunday Reset: rough-plan the week."]},
-];
-
-const DECISION=[
-{l:"Friday?",v:"Always Friday plan (early morning, free evening)."},
-{l:"Climbing/dance tonight?",v:"Early + Climb/Dance or Late + Climb/Dance."},
-{l:"Regular day?",v:"Early Day or Late Day."},
-{l:"Early or late?",v:"Decide the night before. Default early."},
-{l:"Late days:",v:"Everything gets done. Sleep later."},
-{l:"Weekends:",v:"No set schedule. Bed by 1:30 AM, up by 10 AM. Sunday: back to weekday."},
-];
-
-// ─── State ───
-let activeTab='earlyNormal';
-let checkedTasks={};
-let today=new Date().toDateString();
-let _lastPct=0;
-
-function loadState(){
-  try{
-    const saved=localStorage.getItem('blueprint_state');
-    if(saved){const d=JSON.parse(saved);if(d.date===today){checkedTasks=d.checks||{};}else{checkedTasks={};saveState();}}
-  }catch(e){}
+// ── Theme ──
+function initTheme() {
+  const saved = localStorage.getItem('bp_theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.dataset.theme = theme;
+  document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem('bp_theme', t);
+  document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
+  if (activeTab === 'progress' && chartInst) renderProgressTab();
 }
 
-function saveState(){
-  try{localStorage.setItem('blueprint_state',JSON.stringify({date:today,checks:checkedTasks}));}catch(e){}
+// ── User ──
+function selectUser(u) {
+  user = u;
+  localStorage.setItem('bp_user', u);
+  document.getElementById('overlay').classList.remove('on');
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('app').classList.add('on');
+  updateChip();
+  attachFirebase();
+  renderPlans();
+  renderRules();
+}
+function updateChip() {
+  const av = document.getElementById('chipAv');
+  const nm = document.getElementById('chipName');
+  av.style.background = user === 'george' ? '#007AFF' : '#FF6B9D';
+  av.textContent = user === 'george' ? 'G' : 'O';
+  nm.textContent = user === 'george' ? 'George' : 'Olivia';
+  document.getElementById('shG').classList.toggle('on', user === 'george');
+  document.getElementById('shO').classList.toggle('on', user === 'olivia');
+}
+function openSheet() { document.getElementById('overlay').classList.add('on'); }
+function maybeCloseSheet(e) {
+  if (e.target === document.getElementById('overlay'))
+    document.getElementById('overlay').classList.remove('on');
 }
 
-function loadTheme(){
-  try{const t=localStorage.getItem('blueprint_theme');if(t)document.body.dataset.theme=t;updateThemeBtn();}catch(e){}
+// ── Tab Nav ──
+function goTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('on'));
+  document.getElementById('tb-' + tab).classList.add('on');
+  document.getElementById('p-' + tab).classList.add('on');
+  const titles = { today:'Today', progress:'Progress', plans:'Plans', rules:'Rules' };
+  document.getElementById('hdrTitle').textContent = titles[tab];
+  if (tab === 'progress') renderProgressTab();
 }
 
-function toggleTheme(){
-  const t=document.body.dataset.theme==='dark'?'light':'dark';
-  document.body.dataset.theme=t;
-  try{localStorage.setItem('blueprint_theme',t);}catch(e){}
-  updateThemeBtn();initParticles();
-}
+// ── Firebase ──
+function refToday(u) { return db.ref(`/users/${u}/checkins/${todayKey}`); }
 
-function updateThemeBtn(){
-  document.getElementById('themeToggle').textContent=document.body.dataset.theme==='dark'?'☀️':'🌙';
-}
-
-// ─── Yuta ───
-function setYutaQuote(quotes){
-  const pool=quotes||YUTA_QUOTES;
-  const q=pool[Math.floor(Math.random()*pool.length)];
-  document.getElementById('yutaQuoteJp').textContent=q.jp;
-  document.getElementById('yutaQuoteCn').textContent=q.cn;
-  document.getElementById('yutaQuoteEn').textContent=q.en;
-}
-
-function showTaskCheer(){
-  setYutaQuote(TASK_CHEERS);
-  const bar=document.getElementById('yutaBar');
-  bar.classList.add('energy-spike');
-  setTimeout(()=>bar.classList.remove('energy-spike'),1200);
-}
-
-// ─── Progress ───
-function shootCanvasFlames(gifEl){
-  const rect=gifEl.getBoundingClientRect();
-  const cx=rect.left+rect.width/2;
-  const cy=rect.top+rect.height/2;
-
-  const canvas=document.createElement('canvas');
-  canvas.style.cssText='position:fixed;top:0;left:0;pointer-events:none;z-index:200;';
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-  document.body.appendChild(canvas);
-  const ctx=canvas.getContext('2d');
-
-  const maxR=90;
-
-  // Irregular edge points — gives the sphere a jagged, organic boundary
-  const edgePts=Array.from({length:24},(_,i)=>{
-    const a=(Math.PI*2*i/24);
-    const jitter=0.75+Math.random()*0.5;
-    return{a,jitter};
+function attachFirebase() {
+  if (fbOff) fbOff();
+  refToday(user).on('value', snap => {
+    const d = snap.val();
+    if (d) {
+      if (d.dayType) dayType = d.dayType;
+      checks = d.tasks ? {...d.tasks} : {};
+    } else {
+      checks = {};
+    }
+    renderToday();
   });
-
-  // Wispy tendrils erupting from the edge
-  const wisps=Array.from({length:16},()=>({
-    a:Math.random()*Math.PI*2,
-    len:18+Math.random()*42,
-    w:1.2+Math.random()*2.8,
-    wobble:(Math.random()-0.5)*22,
-    phase:Math.random()*0.2,
-    color:['#ffffff','#a5b4fc','#06b6d4','#4f6df5'][Math.floor(Math.random()*4)],
-  }));
-
-  // Debris particles flying outward
-  const debris=Array.from({length:20},()=>({
-    a:Math.random()*Math.PI*2,
-    speed:45+Math.random()*70,
-    size:1.5+Math.random()*3,
-    color:Math.random()>0.5?'#ffffff':'#4f6df5',
-  }));
-
-  const t0=performance.now(), dur=650;
-
-  function easeOut(t){return 1-Math.pow(1-t,2.5);}
-
-  function frame(now){
-    const t=Math.min((now-t0)/dur,1);
-    if(t>=1){canvas.remove();return;}
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.lineCap='round'; ctx.lineJoin='round';
-
-    const e=easeOut(t);
-    const r=maxR*e;
-    const fade=t<0.6?1:1-(t-0.6)/0.4;
-
-    // ── Outer smoke shell (dark blue/black, irregular) ──
-    ctx.beginPath();
-    edgePts.forEach((p,i)=>{
-      const rx=cx+Math.cos(p.a)*r*p.jitter;
-      const ry=cy+Math.sin(p.a)*r*p.jitter;
-      i===0?ctx.moveTo(rx,ry):ctx.lineTo(rx,ry);
-    });
-    ctx.closePath();
-    const smokeGrad=ctx.createRadialGradient(cx,cy,r*0.35,cx,cy,r*1.05);
-    smokeGrad.addColorStop(0,'rgba(0,0,0,0)');
-    smokeGrad.addColorStop(0.5,`rgba(5,10,40,${fade*0.55})`);
-    smokeGrad.addColorStop(0.82,`rgba(10,20,80,${fade*0.45})`);
-    smokeGrad.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=smokeGrad; ctx.globalAlpha=1; ctx.fill();
-
-    // ── Mid energy sphere (blue glow) ──
-    const midGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,r*0.82);
-    midGrad.addColorStop(0,`rgba(200,220,255,${fade*0.9})`);
-    midGrad.addColorStop(0.25,`rgba(99,102,241,${fade*0.75})`);
-    midGrad.addColorStop(0.6,`rgba(30,60,180,${fade*0.45})`);
-    midGrad.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=midGrad; ctx.globalAlpha=1;
-    ctx.beginPath(); ctx.arc(cx,cy,r*0.82,0,Math.PI*2); ctx.fill();
-
-    // ── Bright white core (fades quickest) ──
-    const coreA=Math.max(0,fade-(t*1.2));
-    if(coreA>0){
-      const coreGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,r*0.42);
-      coreGrad.addColorStop(0,`rgba(255,255,255,${coreA})`);
-      coreGrad.addColorStop(0.5,`rgba(180,200,255,${coreA*0.7})`);
-      coreGrad.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=coreGrad; ctx.globalAlpha=1;
-      ctx.beginPath(); ctx.arc(cx,cy,r*0.42,0,Math.PI*2); ctx.fill();
-    }
-
-    // ── Bright irregular rim ──
-    ctx.beginPath();
-    edgePts.forEach((p,i)=>{
-      const rx=cx+Math.cos(p.a)*r*p.jitter*0.88;
-      const ry=cy+Math.sin(p.a)*r*p.jitter*0.88;
-      i===0?ctx.moveTo(rx,ry):ctx.lineTo(rx,ry);
-    });
-    ctx.closePath();
-    ctx.strokeStyle=`rgba(180,210,255,${fade*0.8})`;
-    ctx.lineWidth=2.5;
-    ctx.shadowColor='#4f6df5'; ctx.shadowBlur=14;
-    ctx.globalAlpha=fade; ctx.stroke();
-    ctx.shadowBlur=0;
-
-    // ── Wispy tendrils at edge ──
-    wisps.forEach(w=>{
-      if(t<w.phase)return;
-      const ft=Math.min((t-w.phase)/(1-w.phase),1);
-      const base=r*0.8;
-      const sx=cx+Math.cos(w.a)*base;
-      const sy=cy+Math.sin(w.a)*base;
-      const tipLen=w.len*ft;
-      const ex=cx+Math.cos(w.a)*(base+tipLen)+w.wobble*ft;
-      const ey=cy+Math.sin(w.a)*(base+tipLen)+w.wobble*ft*0.5;
-      const a2=(ft<0.4?ft/0.4:1-(ft-0.4)/0.6)*fade;
-      ctx.globalAlpha=a2*0.85;
-      ctx.shadowColor=w.color; ctx.shadowBlur=6;
-      ctx.strokeStyle=w.color; ctx.lineWidth=w.w*(1-ft*0.6);
-      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke();
-      // tip glow
-      ctx.beginPath(); ctx.arc(ex,ey,w.w*0.7,0,Math.PI*2);
-      ctx.fillStyle='#fff'; ctx.globalAlpha=a2*0.7; ctx.fill();
-    });
-
-    // ── Flying debris ──
-    debris.forEach(d=>{
-      const dist=d.speed*e;
-      const dx=cx+Math.cos(d.a)*dist, dy=cy+Math.sin(d.a)*dist;
-      ctx.beginPath(); ctx.arc(dx,dy,d.size*(1-t*0.5),0,Math.PI*2);
-      ctx.fillStyle=d.color; ctx.globalAlpha=fade*0.75; ctx.fill();
-    });
-
-    ctx.shadowBlur=0; ctx.globalAlpha=1;
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
+  fbOff = () => refToday(user).off();
 }
 
-function updateProgress(){
-  const schedule=S[activeTab];
-  if(!schedule)return;
-  const total=schedule.length;
-  const done=schedule.filter((_,i)=>checkedTasks[activeTab+'_'+i]).length;
-  const pct=Math.round((done/total)*100);
-
-  let grade='Unranked';
-  let gradeColor='var(--text-muted)';
-  if(pct>=100){grade='Special Grade ✦';gradeColor='#ec4899';}
-  else if(pct>=75){grade='Grade 1';gradeColor='#7c3aed';}
-  else if(pct>=50){grade='Grade 2';gradeColor='#4f6df5';}
-  else if(pct>=25){grade='Grade 4';gradeColor='var(--text-muted)';}
-
-  document.getElementById('progressPct').textContent=pct+'%';
-  document.getElementById('progressPct').style.color=gradeColor;
-  document.getElementById('progressDetail').innerHTML=`${done}/${total} tasks &nbsp;·&nbsp; <span style="color:${gradeColor};font-weight:700">${grade}</span>`;
-
-  // Scale + burst the cursed energy GIF — 28px at 0%, 112px at 100%
-  const gif=document.getElementById('cursedEnergyGif');
-  const pctBadge=document.getElementById('progressPct');
-  if(gif){
-    const size=Math.round(28+(pct/100)*84);
-    gif.style.width=size+'px';
-    gif.style.height=size+'px';
-
-    // Completely hidden at 0%
-    gif.style.opacity = pct === 0 ? '0' : '1';
-    gif.style.visibility = pct === 0 ? 'hidden' : 'visible';
-
-    // Burst + canvas flames when progress increases
-    if(pct > _lastPct && pct > 0){
-      gif.classList.remove('gif-burst');
-      void gif.offsetWidth;
-      gif.classList.add('gif-burst');
-      setTimeout(()=>gif.classList.remove('gif-burst'), 700);
-      shootCanvasFlames(gif);
-    }
-
-    let glowColor='rgba(99,102,241,0.4)';
-    if(pct>=100){gif.style.filter='brightness(1.15) saturate(1.6) drop-shadow(0 0 14px #ec4899)';glowColor='rgba(236,72,153,0.7)';}
-    else if(pct>=75){gif.style.filter='brightness(1.05) saturate(1.4) drop-shadow(0 0 10px #7c3aed)';glowColor='rgba(124,58,237,0.6)';}
-    else if(pct>=50){gif.style.filter='brightness(0.92) saturate(1.3) drop-shadow(0 0 8px #4f6df5)';glowColor='rgba(79,109,245,0.5)';}
-    else if(pct>=25){gif.style.filter='brightness(0.82) saturate(1.2) drop-shadow(0 0 5px #4f6df5)';glowColor='rgba(79,109,245,0.35)';}
-    else gif.style.filter='brightness(0.65) saturate(1.0)';
-
-    if(pctBadge){
-      pctBadge.style.borderColor=glowColor;
-      pctBadge.style.boxShadow=`0 0 10px ${glowColor}`;
-      pctBadge.style.textShadow=`0 0 8px ${glowColor}`;
-    }
-  }
-  _lastPct=pct;
-
-  if(pct===100&&done>0)triggerDomain();
-}
-
-function triggerDomain(){
-  const msg=DOMAIN_MSGS[Math.floor(Math.random()*DOMAIN_MSGS.length)];
-  document.getElementById('domainMain').textContent=msg.main;
-  document.getElementById('domainJp').textContent=msg.jp;
-  document.getElementById('domainCn').textContent=msg.cn;
-  document.getElementById('domainEn').textContent=msg.en;
-
-  // Reset state
-  const overlay=document.getElementById('domainOverlay');
-  const content=document.getElementById('domainContent');
-  const announce=document.getElementById('domainAnnounce');
-  const main=document.getElementById('domainMain');
-  const jp=document.getElementById('domainJp');
-  const cn=document.getElementById('domainCn');
-  const en=document.getElementById('domainEn');
-  const closeBtn=document.getElementById('domainCloseBtn');
-  [content,announce,main,jp,cn,en,closeBtn].forEach(el=>{
-    el.classList.remove('visible','snap','show');
+function save() {
+  if (!user) return;
+  const tasks = S[dayType];
+  const done = Object.values(checks).filter(Boolean).length;
+  const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+  refToday(user).set({
+    dayType, tasks: checks, percentage: pct,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
   });
-
-  overlay.classList.add('active');
-
-  // Phase 1 — geometric rings draw from center (0–500ms)
-  const canvas=document.getElementById('domainCanvas');
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-  const ctx=canvas.getContext('2d');
-  const cx=canvas.width/2, cy=canvas.height/2;
-  const maxR=Math.hypot(cx,cy)*1.1;
-  const t0=performance.now();
-  const phase1Dur=500, phase2Dur=1000;
-
-  function drawRings(now){
-    const t=Math.min((now-t0)/phase1Dur,1);
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // Void background fills in
-    ctx.fillStyle=`rgba(0,0,0,${t*0.6})`;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    // Concentric rings drawing outward
-    const numRings=6;
-    for(let r=0;r<numRings;r++){
-      const ringR=(maxR*(r+1)/numRings)*t;
-      const alpha=(1-(r/numRings))*0.4*t;
-      ctx.beginPath();
-      ctx.arc(cx,cy,ringR,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(99,102,241,${alpha})`;
-      ctx.lineWidth=1;
-      ctx.stroke();
-    }
-
-    // Radial lines tracing outward
-    const numLines=12;
-    for(let l=0;l<numLines;l++){
-      const angle=(Math.PI*2*l/numLines);
-      const len=maxR*t;
-      ctx.beginPath();
-      ctx.moveTo(cx,cy);
-      ctx.lineTo(cx+Math.cos(angle)*len, cy+Math.sin(angle)*len);
-      ctx.strokeStyle=`rgba(79,109,245,${0.15*t})`;
-      ctx.lineWidth=0.5;
-      ctx.stroke();
-    }
-
-    if(t<1){requestAnimationFrame(drawRings);}
-    else{startPhase2(now);}
-  }
-  requestAnimationFrame(drawRings);
-
-  // Phase 2 — void forms with energy streams (500–1500ms)
-  function startPhase2(startNow){
-    const t2=performance.now();
-    const streams=Array.from({length:18},()=>({
-      angle:Math.random()*Math.PI*2,
-      speed:0.4+Math.random()*0.6,
-      length:0.3+Math.random()*0.5,
-      alpha:0.2+Math.random()*0.4,
-      offset:Math.random(),
-    }));
-
-    function drawPhase2(now){
-      const t=Math.min((now-t2)/phase2Dur,1);
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-
-      // Deep void bg
-      const bgGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,maxR);
-      bgGrad.addColorStop(0,`rgba(12,8,30,${0.85+t*0.1})`);
-      bgGrad.addColorStop(0.5,`rgba(5,3,18,0.97)`);
-      bgGrad.addColorStop(1,'rgba(0,0,0,1)');
-      ctx.fillStyle=bgGrad;
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      // Concentric rings (settled)
-      const numRings=6;
-      for(let r=0;r<numRings;r++){
-        const ringR=maxR*(r+1)/numRings;
-        const alpha=(1-(r/numRings))*0.25;
-        ctx.beginPath();
-        ctx.arc(cx,cy,ringR,0,Math.PI*2);
-        ctx.strokeStyle=`rgba(99,102,241,${alpha})`;
-        ctx.lineWidth=1;
-        ctx.stroke();
-      }
-
-      // Energy streams flowing outward
-      streams.forEach(s=>{
-        const phase=(t*s.speed+s.offset)%1;
-        const startR=maxR*phase*0.9;
-        const endR=Math.min(startR+maxR*s.length*0.3, maxR);
-        const sx=cx+Math.cos(s.angle)*startR;
-        const sy=cy+Math.sin(s.angle)*startR;
-        const ex=cx+Math.cos(s.angle)*endR;
-        const ey=cy+Math.sin(s.angle)*endR;
-        const streamGrad=ctx.createLinearGradient(sx,sy,ex,ey);
-        streamGrad.addColorStop(0,'rgba(99,102,241,0)');
-        streamGrad.addColorStop(0.4,`rgba(99,102,241,${s.alpha*t})`);
-        streamGrad.addColorStop(1,'rgba(236,72,153,0)');
-        ctx.beginPath();
-        ctx.moveTo(sx,sy);
-        ctx.lineTo(ex,ey);
-        ctx.strokeStyle=streamGrad;
-        ctx.lineWidth=1.5;
-        ctx.stroke();
-      });
-
-      // Center glow building up
-      const centerGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,80*t);
-      centerGrad.addColorStop(0,`rgba(139,92,246,${0.3*t})`);
-      centerGrad.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=centerGrad;
-      ctx.beginPath();
-      ctx.arc(cx,cy,80*t,0,Math.PI*2);
-      ctx.fill();
-
-      if(t<1){requestAnimationFrame(drawPhase2);}
-      else{startPhase3();}
-    }
-    requestAnimationFrame(drawPhase2);
-  }
-
-  // Phase 3 — kanji snaps in (1500ms+), then text stagger
-  function startPhase3(){
-    content.classList.add('visible');
-    setTimeout(()=>announce.classList.add('snap'),80);
-    setTimeout(()=>main.classList.add('show'),700);
-    setTimeout(()=>jp.classList.add('show'),900);
-    setTimeout(()=>cn.classList.add('show'),1050);
-    setTimeout(()=>en.classList.add('show'),1200);
-    setTimeout(()=>closeBtn.classList.add('show'),1400);
-
-    // Phase 4 — settle canvas to ambient
-    const t4=performance.now();
-    const streams=Array.from({length:14},()=>({
-      angle:Math.random()*Math.PI*2,
-      speed:0.15+Math.random()*0.2,
-      length:0.25+Math.random()*0.4,
-      alpha:0.12+Math.random()*0.2,
-      offset:Math.random(),
-    }));
-    function drawAmbient(now){
-      if(!document.getElementById('domainOverlay').classList.contains('active'))return;
-      const t=Math.min((now-t4)/3000,1);
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      const bgGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,maxR);
-      bgGrad.addColorStop(0,'rgba(14,10,35,0.95)');
-      bgGrad.addColorStop(1,'rgba(0,0,0,1)');
-      ctx.fillStyle=bgGrad;
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      const numRings=6;
-      for(let r=0;r<numRings;r++){
-        ctx.beginPath();
-        ctx.arc(cx,cy,maxR*(r+1)/numRings,0,Math.PI*2);
-        ctx.strokeStyle=`rgba(99,102,241,${(1-(r/numRings))*0.18})`;
-        ctx.lineWidth=0.8; ctx.stroke();
-      }
-      streams.forEach(s=>{
-        const phase=((now/4000)*s.speed+s.offset)%1;
-        const startR=maxR*phase;
-        const endR=Math.min(startR+maxR*s.length*0.25,maxR);
-        const sx=cx+Math.cos(s.angle)*startR, sy=cy+Math.sin(s.angle)*startR;
-        const ex=cx+Math.cos(s.angle)*endR,   ey=cy+Math.sin(s.angle)*endR;
-        const g=ctx.createLinearGradient(sx,sy,ex,ey);
-        g.addColorStop(0,'rgba(99,102,241,0)');
-        g.addColorStop(0.5,`rgba(99,102,241,${s.alpha})`);
-        g.addColorStop(1,'rgba(236,72,153,0)');
-        ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);
-        ctx.strokeStyle=g;ctx.lineWidth=1;ctx.stroke();
-      });
-      requestAnimationFrame(drawAmbient);
-    }
-    requestAnimationFrame(drawAmbient);
-  }
 }
 
-function closeDomain(){
-  document.getElementById('domainOverlay').classList.remove('active');
-  const ctx=document.getElementById('domainCanvas').getContext('2d');
-  ctx.clearRect(0,0,document.getElementById('domainCanvas').width,document.getElementById('domainCanvas').height);
+// ── Today ──
+function renderToday() {
+  // Day selector
+  document.getElementById('daySel').innerHTML = DAY_TYPES.map(d =>
+    `<div class="d-pill ${d.key === dayType ? 'on' : ''}" onclick="pickDay('${d.key}')">${d.label}</div>`
+  ).join('');
+  renderTodayBody();
 }
 
-// ─── Render ───
-function renderTabs(){
-  const c=document.getElementById('tabs');
-  c.innerHTML=TABS.map(t=>`<button class="tab ${t.key===activeTab?'active':''}" data-key="${t.key}">${t.label}</button>`).join('');
-  c.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{activeTab=b.dataset.key;renderTabs();renderContent();updateProgress();}));
+function pickDay(key) {
+  dayType = key;
+  checks = {};
+  expanded = {};
+  save();
+  renderToday();
 }
 
-function renderBlock(b,i){
-  const s=TYPE_MAP[b.tp];
-  const key=activeTab+'_'+i;
-  const done=checkedTasks[key];
-  const same=b.g===b.o;
-  const act=same?b.g:`<span class="person-label">G:</span> ${b.g}<br><span class="person-label">O:</span> ${b.o}`;
-  return `<div class="block ${s.cls}" style="animation-delay:${i*0.03}s">
-    <div class="block-header">
-      <span class="block-icon">${b.i}</span>
-      <div class="block-content" onclick="toggleNote(${i})">
-        <div class="block-meta">
-          <span class="block-time">${b.t}</span>
-          <span class="block-type">${s.label}</span>
+function renderTodayBody() {
+  const tasks = S[dayType];
+  const done = Object.values(checks).filter(Boolean).length;
+  const total = tasks.length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+
+  const card = document.getElementById('progCard');
+  card.classList.toggle('done', pct === 100);
+  document.getElementById('progNum').textContent =
+    pct === 100 ? 'All done! 🎉' : `${done} / ${total} tasks · ${pct}%`;
+  document.getElementById('progFill').style.width = pct + '%';
+
+  document.getElementById('tlWrap').innerHTML = tasks.map((item, i) => {
+    const isDone = !!checks[i];
+    const isOpen = !!expanded[i];
+    const activity = user === 'george' ? item.g : item.o;
+    return `
+      <div class="tl-item ${isDone ? 'done' : ''} ${isOpen ? 'open' : ''} fu"
+           onclick="toggleExpand(${i})" style="animation-delay:${i * 0.018}s">
+        <div class="tl-time">${item.t}</div>
+        <div class="tl-ico">${item.i}</div>
+        <div class="tl-body">
+          <div class="tl-name ${isDone ? 'done' : ''}">${activity}</div>
+          ${item.n ? `<div class="tl-note">${item.n.replace(/\n/g,'<br>')}</div>` : ''}
         </div>
-        <div class="block-activity">${act}</div>
-      </div>
-      <div class="block-actions">
-        <div class="check-btn-wrap"><button class="check-btn ${done?'done':''}" data-check-key="${key}" onclick="toggleCheck('${key}',${i})">${done?'✓':''}</button></div>
-        <span class="block-chevron" id="chev-${i}" onclick="toggleNote(${i})">▾</span>
-      </div>
-    </div>
-    <div class="block-note" id="note-${i}" style="border-top: 1px solid currentColor; border-top-color: inherit; opacity: 0.15;">${b.n}</div>
-  </div>`;
-}
-
-function toggleNote(i){
-  const n=document.getElementById('note-'+i);
-  const c=document.getElementById('chev-'+i);
-  if(!n)return;
-  n.classList.toggle('open');
-  if(n.classList.contains('open'))n.style.opacity='0.7';else n.style.opacity='0.15';
-  c.classList.toggle('open');
-}
-
-function triggerBlackFlash(btn){
-  // Audio
-  try{const a=new Audio('kokusen.wav');a.volume=1.0;a.play().catch(()=>{});}catch(e){}
-
-  // Screen flash
-  const screen=document.createElement('div');
-  screen.className='bf-screen';
-  document.body.appendChild(screen);
-  setTimeout(()=>screen.remove(),450);
-
-  // Kanji label above button
-  const wrap=btn.closest('.check-btn-wrap');
-  if(wrap){
-    const label=document.createElement('div');
-    label.className='bf-label';
-    label.textContent='黒閃';
-    wrap.appendChild(label);
-    setTimeout(()=>label.remove(),850);
-  }
-
-  // Canvas-based recursive lightning
-  const rect=btn.getBoundingClientRect();
-  const cx=rect.left+rect.width/2;
-  const cy=rect.top+rect.height/2;
-
-  const canvas=document.createElement('canvas');
-  canvas.style.cssText='position:fixed;top:0;left:0;pointer-events:none;z-index:9991;';
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-  document.body.appendChild(canvas);
-  const ctx=canvas.getContext('2d');
-
-  // Pre-generate bolt configs so they stay stable between glow + core passes
-  const boltDefs=Array.from({length:12},(_,i)=>({
-    angle:(Math.PI*2*i/12)+(Math.random()-0.5)*0.45,
-    len:55+Math.random()*95,
-    hasBranch:Math.random()>0.4,
-    branchOffset:(Math.random()-0.5)*1.1,
-    branchFrac:0.3+Math.random()*0.35,
-    branchLen:20+Math.random()*50,
-  }));
-
-  // Debris splatter
-  const debris=Array.from({length:22},()=>({
-    angle:Math.random()*Math.PI*2,
-    speed:35+Math.random()*90,
-    w:2+Math.random()*5,
-    h:1+Math.random()*2.5,
-    alpha:0.55+Math.random()*0.45,
-  }));
-
-  function boltPath(x1,y1,x2,y2,disp){
-    if(disp<2.5){ctx.lineTo(x2,y2);return;}
-    const mx=(x1+x2)/2+(Math.random()-0.5)*disp;
-    const my=(y1+y2)/2+(Math.random()-0.5)*disp;
-    boltPath(x1,y1,mx,my,disp/2);
-    boltPath(mx,my,x2,y2,disp/2);
-  }
-
-  const t0=performance.now();
-  const dur=820;
-
-  function frame(now){
-    const t=Math.min((now-t0)/dur,1);
-    if(t>=1){canvas.remove();return;}
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    const intensity=t<0.18?t/0.18:Math.pow(1-(t-0.18)/0.82,1.4);
-    const grow=Math.min(t/0.38,1);
-
-    // Center burst
-    const br=14+38*t;
-    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,br);
-    g.addColorStop(0,`rgba(255,255,255,${intensity*0.95})`);
-    g.addColorStop(0.2,`rgba(255,90,90,${intensity*0.85})`);
-    g.addColorStop(0.55,`rgba(180,0,0,${intensity*0.5})`);
-    g.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.beginPath();ctx.arc(cx,cy,br,0,Math.PI*2);
-    ctx.fillStyle=g;ctx.fill();
-
-    // Lightning bolts — each frame re-runs boltPath for natural flicker
-    boltDefs.forEach(bd=>{
-      const len=bd.len*grow;
-      const ex=cx+Math.cos(bd.angle)*len;
-      const ey=cy+Math.sin(bd.angle)*len;
-
-      // Red glow pass
-      ctx.beginPath();ctx.moveTo(cx,cy);
-      boltPath(cx,cy,ex,ey,len*0.38);
-      ctx.strokeStyle=`rgba(200,0,0,${intensity*0.55})`;
-      ctx.lineWidth=4.5;
-      ctx.shadowColor='#cc0000';ctx.shadowBlur=10;
-      ctx.globalAlpha=1;ctx.stroke();
-
-      // White core pass
-      ctx.beginPath();ctx.moveTo(cx,cy);
-      boltPath(cx,cy,ex,ey,len*0.32);
-      ctx.strokeStyle=`rgba(255,255,255,${intensity*0.92})`;
-      ctx.lineWidth=1.3;
-      ctx.shadowColor='#ffffff';ctx.shadowBlur=5;
-      ctx.stroke();
-
-      // Branch
-      if(bd.hasBranch&&grow>0.25){
-        const bpx=cx+Math.cos(bd.angle)*len*bd.branchFrac;
-        const bpy=cy+Math.sin(bd.angle)*len*bd.branchFrac;
-        const ba=bd.angle+bd.branchOffset;
-        const bex=bpx+Math.cos(ba)*bd.branchLen*grow;
-        const bey=bpy+Math.sin(ba)*bd.branchLen*grow;
-        ctx.beginPath();ctx.moveTo(bpx,bpy);
-        boltPath(bpx,bpy,bex,bey,12);
-        ctx.strokeStyle=`rgba(255,80,80,${intensity*0.65})`;
-        ctx.lineWidth=1;ctx.shadowColor='#ff4444';ctx.shadowBlur=5;
-        ctx.stroke();
-      }
-    });
-
-    ctx.shadowBlur=0;
-
-    // Black debris particles
-    debris.forEach(p=>{
-      const d=p.speed*t;
-      ctx.beginPath();
-      ctx.ellipse(cx+Math.cos(p.angle)*d,cy+Math.sin(p.angle)*d,p.w,p.h,p.angle,0,Math.PI*2);
-      ctx.fillStyle=`rgba(0,0,0,${p.alpha*intensity})`;
-      ctx.globalAlpha=1;ctx.fill();
-    });
-
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-}
-
-function toggleCheck(key,i){
-  checkedTasks[key]=!checkedTasks[key];
-  saveState();
-  const btn=document.querySelector(`.check-btn[data-check-key="${key}"]`);
-  if(checkedTasks[key]){
-    if(btn){btn.classList.add('done');btn.textContent='✓';triggerBlackFlash(btn);}
-    showTaskCheer();
-  } else {
-    if(btn){btn.classList.remove('done');btn.textContent='';}
-  }
-  updateProgress();
-}
-
-function renderContent(){
-  const c=document.getElementById('content');
-
-  if(activeTab==='motivation'){
-    document.getElementById('progressSection').style.display='none';
-    c.innerHTML=`
-      <div class="motiv-hero">
-        <img class="motiv-hero-img" src="IMG_0124.jpeg" alt="Yuta">
-        <div class="motiv-hero-overlay"></div>
-        <div class="motiv-hero-content">
-          <div class="motiv-label">縛りの誓い · Binding Vow</div>
-          <div class="motiv-mission-jp">共に成長し、互いの目標を守る。<br>一人も置いていかない。</div>
-          <div class="motiv-mission-cn">共同成长，守护彼此的目标。<br>没有人会被落下。</div>
-          <div class="motiv-mission-en">We grow together. We protect each other's goals.<br>No one gets left behind.</div>
-        </div>
-      </div>
-
-      <div class="motiv-card blue" style="animation-delay:0.05s">
-        <div class="motiv-card-label">⚡ なぜやるのか · Why We Do This</div>
-        <div class="motiv-card-jp">怠惰こそが最強の呪いだ。スマホのスクロールが、僕たちの可能性を奪っていく。毎日現れることが、僕たちの呪術だ。</div>
-        <div class="motiv-card-cn">懒惰是最强的诅咒。刷手机正在一点点偷走我们的潜力。每天坚持出现，就是我们的咒术。</div>
-        <div class="motiv-card-en">Laziness is the strongest curse. Phone scrolling steals our potential one minute at a time. Showing up every day is our cursed technique.</div>
-      </div>
-
-      <div class="motiv-card purple" style="animation-delay:0.1s">
-        <div class="motiv-card-label">🤝 バディシステム · The Buddy System</div>
-        <div class="motiv-card-jp">一人が崩れそうな時、もう一人が静かにリードする。それが僕たちの縛りの誓いだ。どちらかが落ちても、二人で立ち上がる。</div>
-        <div class="motiv-card-cn">当一个人快撑不住时，另一个人默默带路。这就是我们的誓约。一个人倒下，两个人一起站起来。</div>
-        <div class="motiv-card-en">When one starts to fall, the other leads quietly. That's our pact. One stumbles — both rise together.</div>
-      </div>
-
-      <div class="motiv-card pink" style="animation-delay:0.15s">
-        <div class="motiv-card-label">🌸 共に強くなる · Growing Together</div>
-        <div class="motiv-card-jp">Georgeのキャリア成長、Oliviaのエンジニアとしての道。技は違えど、同じ領域を目指している。お互いの夢が、お互いの燃料になる。</div>
-        <div class="motiv-card-cn">George的职业成长，Olivia的工程师之路。技术不同，目标相同。彼此的梦想，成为彼此的燃料。</div>
-        <div class="motiv-card-en">George's career pivot, Olivia's engineering path. Different techniques — same domain. Each other's dreams fuel each other's fire.</div>
-      </div>
-
-      <div class="motiv-card green" style="animation-delay:0.2s">
-        <div class="motiv-card-label">✦ 毎日の勝利 · Daily Victory</div>
-        <div class="motiv-card-jp">時間通りに眠る。夕食を作る。ジムへ行く。これは雑用じゃない——完璧になるまで磨き続ける呪術だ。小さな勝利が、特級への道を作る。</div>
-        <div class="motiv-card-cn">按时睡觉。做晚餐。去健身房。这不是琐事——这是反复磨砺直到完美的咒术。每一个小小的胜利，都铺就通往特级的道路。</div>
-        <div class="motiv-card-en">Sleep on time. Cook dinner. Go to the gym. These aren't chores — they're techniques practiced until perfect. Small victories pave the road to Special Grade.</div>
+        <span class="type-tag tp-${item.tp}">${item.tp}</span>
+        <div class="chk ${isDone ? 'done' : ''}" onclick="toggleCheck(event,${i})">${isDone ? '✓' : ''}</div>
       </div>`;
-    return;
-  }
-
-  if(activeTab==='protocols'){
-    let h='';
-    h+=`<h2 class="section-title">Ground Rules</h2>`;
-    h+=RULES.map((r,i)=>`<div class="rule-card" style="animation-delay:${i*0.03}s"><div class="rule-title"><span class="icon">${r.i}</span><span class="name">${r.t}</span></div><div class="rule-desc">${r.d}</div></div>`).join('');
-    h+=`<h2 class="section-title" style="margin-top:24px">If-Then Protocols</h2>`;
-    h+=PROTOCOLS.map((p,i)=>`<div class="protocol-card" style="animation-delay:${i*0.03}s"><div class="rule-title"><span class="icon">${p.i}</span><span class="name">If: ${p.t}</span></div><div class="protocol-steps">${p.s.map((s,j)=>`<div class="protocol-step"><span class="num">${j+1}.</span><span class="text">${s}</span></div>`).join('')}</div></div>`).join('');
-
-    h+=`<div class="screen-time-card"><h3>📱 Screen Time Challenge</h3><div class="st-inputs"><div class="st-input-group"><label>George (min)</label><input class="st-input" type="number" id="stGeorge" placeholder="0" oninput="calcScreenTime()"></div><div class="st-input-group"><label>Olivia (min)</label><input class="st-input" type="number" id="stOlivia" placeholder="0" oninput="calcScreenTime()"></div></div><div class="st-result" id="stResult">Enter your screen time to see who won</div></div>`;
-
-    h+=`<div class="decision-card"><h3>📋 How to Pick Your Day</h3>${DECISION.map(d=>`<div class="tree-item"><strong>${d.l}</strong> → ${d.v}</div>`).join('')}</div>`;
-    c.innerHTML=h;
-    document.getElementById('progressSection').style.display='none';
-    return;
-  }
-
-  document.getElementById('progressSection').style.display='flex';
-  const schedule=S[activeTab];
-  const info=PLAN_INFO[activeTab];
-
-  let h=`<div class="plan-info"><div class="plan-meta"><span class="plan-label">${info.label}</span><span>Wake: ${info.wake}</span><span>Sleep: ${info.sleep}</span><span>${info.hours}</span></div>${info.desc}</div>`;
-  h+=`<div class="schedule">${schedule.map((b,i)=>renderBlock(b,i)).join('')}</div>`;
-  c.innerHTML=h;
+  }).join('');
 }
 
-function calcScreenTime(){
-  const g=parseInt(document.getElementById('stGeorge').value)||0;
-  const o=parseInt(document.getElementById('stOlivia').value)||0;
-  const r=document.getElementById('stResult');
-  if(g===0&&o===0){r.textContent='Enter your screen time to see who won';return;}
-  if(g<o)r.innerHTML=`⚡ <strong>George wins!</strong> ${g} vs ${o} min — ${o-g} min less scrolling`;
-  else if(o<g)r.innerHTML=`⚡ <strong>Olivia wins!</strong> ${o} vs ${g} min — ${g-o} min less scrolling`;
-  else r.innerHTML=`🤝 <strong>Tie!</strong> Both at ${g} min — you're in sync`;
+function toggleExpand(i) {
+  expanded[i] = !expanded[i];
+  const el = document.querySelectorAll('.tl-item')[i];
+  if (el) el.classList.toggle('open', !!expanded[i]);
+}
+function toggleCheck(e, i) {
+  e.stopPropagation();
+  checks[i] = !checks[i];
+  renderTodayBody();
+  save();
 }
 
-// ─── Cursed Energy Wisps ───
-let _particleAnimId=null;
-function initParticles(){
-  if(_particleAnimId)cancelAnimationFrame(_particleAnimId);
-  const canvas=document.getElementById('particles');
-  const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-  const isDark=document.body.dataset.theme!=='light';
-  const W=canvas.width, H=canvas.height;
+// ── Progress ──
+function renderProgressTab() {
+  const ranges = ['1W','2W','1M','3M','All'];
+  document.getElementById('rngSel').innerHTML = ranges.map(r =>
+    `<button class="rng-pill ${r === range ? 'on' : ''}" onclick="pickRange('${r}')">${r}</button>`
+  ).join('');
+  loadChartData();
+}
+function pickRange(r) { range = r; renderProgressTab(); }
+function rangeLimit(r) { return {'1W':7,'2W':14,'1M':30,'3M':90,'All':365}[r] || 7; }
 
-  // Each wisp is a bezier curve segment that drifts upward
-  const count=isDark?22:16;
-  const wisps=Array.from({length:count},()=>createWisp(W,H,isDark,true));
+async function loadChartData() {
+  const limit = rangeLimit(range);
+  const [gs, os] = await Promise.all([
+    db.ref('/users/george/checkins').orderByKey().limitToLast(limit).once('value'),
+    db.ref('/users/olivia/checkins').orderByKey().limitToLast(limit).once('value'),
+  ]);
+  const gd = gs.val() || {}, od = os.val() || {};
+  const dates = [...new Set([...Object.keys(gd),...Object.keys(od)])].sort();
+  const gPts = dates.map(d => gd[d]?.percentage ?? null);
+  const oPts = dates.map(d => od[d]?.percentage ?? null);
+  const labels = dates.map(d => { const [,m,day] = d.split('-'); return `${+m}/${+day}`; });
+  drawChart(labels, gPts, oPts);
+  renderStats(gd, od);
+  renderDayTypes(gd, od);
+}
 
-  function createWisp(W,H,dark,randomY){
-    const x=Math.random()*W;
-    const y=randomY?(Math.random()*H):(H+20);
-    const len=40+Math.random()*80;
-    const wobble=(Math.random()-0.5)*60;
-    const speed=0.3+Math.random()*0.5;
-    const alpha=dark?(0.15+Math.random()*0.25):(0.12+Math.random()*0.18);
-    const hue=dark?(220+Math.random()*60):(35+Math.random()*25); // blue-purple or gold
-    const width=0.8+Math.random()*1.4;
-    return {x,y,len,wobble,speed,alpha,hue,width,life:Math.random()};
-  }
-
-  function draw(now){
-    ctx.clearRect(0,0,W,H);
-
-    // Faint radial glow at center (energy source)
-    if(isDark){
-      const cg=ctx.createRadialGradient(W/2,H*0.45,0,W/2,H*0.45,W*0.4);
-      cg.addColorStop(0,'rgba(79,109,245,0.04)');
-      cg.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=cg; ctx.fillRect(0,0,W,H);
+function drawChart(labels, gPts, oPts) {
+  const ctx = document.getElementById('chart').getContext('2d');
+  if (chartInst) chartInst.destroy();
+  const dark = document.documentElement.dataset.theme === 'dark';
+  chartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'George', data:gPts, borderColor:'#007AFF', backgroundColor:'rgba(0,122,255,0.08)',
+          tension:0.4, pointRadius:4, pointBackgroundColor:'#007AFF',
+          pointBorderColor: dark ? '#1C1C1E' : '#fff', pointBorderWidth:1.5,
+          fill:false, spanGaps:true },
+        { label:'Olivia', data:oPts, borderColor:'#FF6B9D', backgroundColor:'rgba(255,107,157,0.08)',
+          tension:0.4, pointRadius:4, pointBackgroundColor:'#FF6B9D',
+          pointBorderColor: dark ? '#1C1C1E' : '#fff', pointBorderWidth:1.5,
+          fill:false, spanGaps:true },
+      ]
+    },
+    options: {
+      responsive:true, plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label: c => `${c.dataset.label}: ${c.parsed.y ?? 'N/A'}%` }}},
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:'#86868B', font:{size:11}, maxRotation:0} },
+        y:{ min:0, max:100,
+          grid:{ color: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' },
+          ticks:{ color:'#86868B', font:{size:11}, callback: v => v+'%' } }
+      }
     }
+  });
+}
 
-    wisps.forEach((w,idx)=>{
-      w.y-=w.speed;
-      w.life+=w.speed/H;
+function renderStats(gd, od) {
+  const avg = d => {
+    const v = Object.values(d).map(x => x?.percentage).filter(x => x != null);
+    return v.length ? Math.round(v.reduce((a,b)=>a+b,0)/v.length) : null;
+  };
+  const streak = d => {
+    let s = 0;
+    for (const k of Object.keys(d).sort().reverse()) {
+      if ((d[k]?.percentage ?? 0) > 0) s++; else break;
+    }
+    return s;
+  };
+  const best = d => {
+    let bv = null, bk = null;
+    for (const [k,v] of Object.entries(d)) {
+      if (bv === null || (v?.percentage ?? 0) > bv) { bv = v?.percentage ?? 0; bk = k; }
+    }
+    if (!bk) return '—';
+    const [,m,day] = bk.split('-');
+    return `${bv}% on ${+m}/${+day}`;
+  };
+  const ga = avg(gd), oa = avg(od);
+  const gs = streak(gd), os = streak(od);
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-c">
+      <div class="stat-lbl">Avg Completion</div>
+      <div class="stat-row"><div class="stat-dot" style="background:#007AFF"></div><div class="stat-val">${ga!=null?ga+'%':'—'}</div></div>
+      <div class="stat-row"><div class="stat-dot" style="background:#FF6B9D"></div><div class="stat-val">${oa!=null?oa+'%':'—'}</div></div>
+    </div>
+    <div class="stat-c">
+      <div class="stat-lbl">Current Streak</div>
+      <div class="stat-row"><div class="stat-dot" style="background:#007AFF"></div><div class="stat-val">${gs} day${gs!==1?'s':''}</div></div>
+      <div class="stat-row"><div class="stat-dot" style="background:#FF6B9D"></div><div class="stat-val">${os} day${os!==1?'s':''}</div></div>
+    </div>
+    <div class="stat-c" style="grid-column:1/-1">
+      <div class="stat-lbl">Best Day</div>
+      <div class="stat-row"><div class="stat-dot" style="background:#007AFF"></div><div class="stat-val" style="font-size:13px">George: ${best(gd)}</div></div>
+      <div class="stat-row"><div class="stat-dot" style="background:#FF6B9D"></div><div class="stat-val" style="font-size:13px">Olivia: ${best(od)}</div></div>
+    </div>`;
+}
 
-      // Fade in at bottom, fade out at top
-      const fadeIn=Math.min(w.life*8,1);
-      const fadeOut=Math.max(0,1-Math.max(0,(H-w.y-60)/100));
-      const a=w.alpha*fadeIn*(1-fadeOut);
-
-      if(w.y+w.len<0||a<=0){
-        wisps[idx]=createWisp(W,H,isDark,false);
-        return;
-      }
-
-      const wobbleX=Math.sin(now*0.0008+idx*1.3)*w.wobble;
-      const x0=w.x+wobbleX*0.3;
-      const y0=w.y+w.len;
-      const cp1x=x0+wobbleX*0.5;
-      const cp1y=y0-w.len*0.4;
-      const cp2x=x0+wobbleX;
-      const cp2y=y0-w.len*0.75;
-      const x1=x0+wobbleX*1.2;
-      const y1=w.y;
-
-      const grad=ctx.createLinearGradient(x0,y0,x1,y1);
-      if(isDark){
-        grad.addColorStop(0,`hsla(${w.hue},80%,65%,0)`);
-        grad.addColorStop(0.3,`hsla(${w.hue},80%,65%,${a})`);
-        grad.addColorStop(0.8,`hsla(${w.hue+20},75%,70%,${a*0.6})`);
-        grad.addColorStop(1,`hsla(${w.hue+40},70%,75%,0)`);
-      } else {
-        grad.addColorStop(0,`hsla(${w.hue},90%,55%,0)`);
-        grad.addColorStop(0.3,`hsla(${w.hue},90%,55%,${a})`);
-        grad.addColorStop(1,`hsla(${w.hue},85%,60%,0)`);
-      }
-
-      ctx.beginPath();
-      ctx.moveTo(x0,y0);
-      ctx.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,x1,y1);
-      ctx.strokeStyle=grad;
-      ctx.lineWidth=w.width;
-      ctx.lineCap='round';
-      ctx.stroke();
-    });
-
-    _particleAnimId=requestAnimationFrame(draw);
+function renderDayTypes(gd, od) {
+  const cnt = {};
+  for (const v of [...Object.values(gd),...Object.values(od)]) {
+    if (v?.dayType) cnt[v.dayType] = (cnt[v.dayType]||0) + 1;
   }
-  _particleAnimId=requestAnimationFrame(draw);
+  const lbl = {earlyNormal:'Early Day',earlyClimb:'Early+Climb',lateNormal:'Late Day',lateClimb:'Late+Climb',friday:'Friday'};
+  document.getElementById('dtBreakdown').innerHTML = Object.entries(cnt).length
+    ? Object.entries(cnt).map(([k,v]) => `
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--text)">${lbl[k]||k}</span>
+          <span style="color:var(--text2);font-weight:600">${v} day${v!==1?'s':''}</span>
+        </div>`).join('')
+    : '<div style="color:var(--text2);font-size:13px;padding:4px 0">No data yet</div>';
 }
 
-window.addEventListener('resize',()=>{
-  const c=document.getElementById('particles');
-  c.width=window.innerWidth;c.height=window.innerHeight;
-});
-
-// ─── Midnight Reset ───
-function scheduleMidnightReset(){
-  const now=new Date();
-  const midnight=new Date();
-  midnight.setHours(24,0,0,0);
-  setTimeout(()=>{
-    checkedTasks={};
-    today=new Date().toDateString();
-    saveState();
-    renderContent();
-    updateProgress();
-    scheduleMidnightReset();
-  },midnight-now);
+// ── Plans ──
+function renderPlans() {
+  document.getElementById('plansWrap').innerHTML = DAY_TYPES.map(dt => {
+    const info = PLAN_INFO[dt.key];
+    const tasks = S[dt.key];
+    return `
+      <div class="plan-c" onclick="this.classList.toggle('open')">
+        <div class="plan-hdr">
+          <div>
+            <div class="plan-ttl">${dt.label}</div>
+            <div class="plan-times">Wake ${info.wake} · Sleep ${info.sleep}</div>
+          </div>
+          <span class="plan-chev">▼</span>
+        </div>
+        <div class="plan-body">
+          <div class="plan-desc">${info.desc}</div>
+          <div class="mini-tl">
+            ${tasks.map(item => `
+              <div class="mi">
+                <div class="mi-t">${item.t}</div>
+                <div class="mi-tx">${item.i} ${item.g}${item.g!==item.o
+                  ? ` · <span style="color:#FF6B9D">${item.o}</span>` : ''}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-// ─── Init ───
-loadState();
-loadTheme();
-setYutaQuote();
-renderTabs();
-renderContent();
-updateProgress();
-initParticles();
-scheduleMidnightReset();
+// ── Rules ──
+function renderRules() {
+  document.getElementById('rulesWrap').innerHTML = `
+    <div class="sec-hdr">Ground Rules</div>
+    ${RULES.map(r => `
+      <div class="rule-c fu">
+        <div class="rule-ico">${r.i}</div>
+        <div><div class="rule-ttl">${r.t}</div><div class="rule-dsc">${r.d}</div></div>
+      </div>`).join('')}
+    <div class="sec-hdr" style="margin-top:22px">If-Then Protocols</div>
+    ${PROTOCOLS.map(p => `
+      <div class="proto-c" onclick="this.classList.toggle('open')">
+        <div class="proto-hdr">
+          <div class="proto-left">
+            <span style="font-size:18px">${p.i}</span>
+            <span class="proto-ttl">${p.t}</span>
+          </div>
+          <span style="color:var(--text2);font-size:11px">▼</span>
+        </div>
+        <div class="proto-steps">
+          ${p.s.map(s => `<div class="proto-step">${s}</div>`).join('')}
+        </div>
+      </div>`).join('')}
+    <div class="sec-hdr" style="margin-top:22px">How to Pick Your Day</div>
+    ${DECISION.map(d => `
+      <div class="dec-c">
+        <div class="dec-q">${d.l}</div>
+        <div class="dec-a">${d.v}</div>
+      </div>`).join('')}`;
+}
+
+// ── Init ──
+initTheme();
+const savedUser = localStorage.getItem('bp_user');
+if (savedUser) {
+  user = savedUser;
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('app').classList.add('on');
+  updateChip();
+  attachFirebase();
+  renderPlans();
+  renderRules();
+}
 </script>
 </body>
 </html>
