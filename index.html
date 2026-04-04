@@ -50,12 +50,23 @@ body {
 }
 
 /* ─── Header ─── */
-.header { text-align: center; margin-bottom: 24px; }
+.header {
+  text-align: center; margin-bottom: 24px;
+  background: rgba(5,3,18,0.62);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 18px;
+  padding: 16px 20px 14px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
 
 .header .cursed-label {
   font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
-  color: var(--cursed-blue); font-weight: 700; margin-bottom: 8px;
-  text-shadow: 0 0 20px rgba(79,109,245,0.8), 0 1px 6px rgba(0,0,0,1), 0 0 2px rgba(0,0,0,1);
+  color: #a5b4fc; font-weight: 700; margin-bottom: 8px;
+  text-shadow:
+    0 0 1px #fff,
+    0 0 20px rgba(79,109,245,0.9),
+    0 1px 6px rgba(0,0,0,1);
 }
 
 .header h1 {
@@ -63,14 +74,22 @@ body {
   background: linear-gradient(135deg, var(--cursed-blue), var(--cursed-purple), var(--rika-pink));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,1)) drop-shadow(0 0 12px rgba(99,102,241,0.5));
+  filter:
+    drop-shadow(0 0 1px rgba(255,255,255,0.9))
+    drop-shadow(0 0 1px rgba(255,255,255,0.7))
+    drop-shadow(0 0 2px rgba(255,255,255,0.5))
+    drop-shadow(0 2px 6px rgba(0,0,0,1))
+    drop-shadow(0 0 14px rgba(99,102,241,0.6));
 }
 
 .header .subtitle {
   font-size: 13px; line-height: 1.5;
   max-width: 400px; margin: 0 auto;
-  color: rgba(232,232,240,0.75);
-  text-shadow: 0 1px 5px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.9);
+  color: rgba(232,232,240,0.9);
+  text-shadow:
+    0 0 1px rgba(255,255,255,0.6),
+    0 1px 5px rgba(0,0,0,1),
+    0 0 12px rgba(0,0,0,0.9);
 }
 
 /* ─── Theme Toggle ─── */
