@@ -8,6 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-database-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
 <style>
 :root {
   --bg:      #F5F5F7;
@@ -454,6 +455,29 @@ body {
 #victorySongDismiss.visible { display: flex; }
 #victorySongDismiss:active { opacity: 0.75; }
 
+/* ── YouTube overlay ── */
+#ytOverlay {
+  display: none; position: fixed; inset: 0; z-index: 480;
+  background: rgba(0,0,0,0.95);
+  align-items: center; justify-content: center;
+}
+#ytOverlay.on { display: flex; }
+#ytClose {
+  position: absolute; top: 16px; right: 16px;
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,0.15); color: #fff;
+  font-size: 20px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit; z-index: 481;
+}
+#ytClose:active { background: rgba(255,255,255,0.3); }
+#ytWrapper {
+  width: calc(100% - 32px); max-width: 560px;
+  aspect-ratio: 16 / 9;
+}
+#ytWrapper iframe,
+#ytPlayerDiv { width: 100% !important; height: 100% !important; }
+
 /* ── Toast Notifications ── */
 .toast {
   position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
@@ -870,6 +894,12 @@ body {
 
 <!-- ── Victory song dismiss ── -->
 <button id="victorySongDismiss" onclick="stopVictorySong()">♫ Stop</button>
+
+<!-- ── YouTube overlay ── -->
+<div id="ytOverlay">
+  <button id="ytClose" onclick="closeYouTubeOverlay()">✕</button>
+  <div id="ytWrapper"><div id="ytPlayerDiv"></div></div>
+</div>
 
 <!-- ── Celebration ── -->
 <div class="celebrate-overlay" id="celebrateOverlay">
@@ -1853,24 +1883,11 @@ function triggerCelebration() {
   const c1 = user === 'george' ? georgeColor : oliviaColor;
   const c2 = '#5856D6';
 
-  // Show card
-  document.getElementById('celebTitle').textContent = `All done, ${name}! 🎉`;
-  document.getElementById('celebSub').textContent =
-    'Every task complete. You showed up fully today.';
-  document.getElementById('celebrateOverlay').classList.add('on');
-
   // Celebration chime — three rising notes (C5 → E5 → G5)
   playCelebrationChime();
 
-  // Play victory song
-  const celebAudio = document.getElementById('celebrationAudio');
-  if (celebAudio) {
-    celebAudio.volume = 0.7;
-    celebAudio.currentTime = 0;
-    celebAudio.play().catch(() => {});
-    celebAudio.onended = () => document.getElementById('victorySongDismiss').classList.remove('visible');
-  }
-  document.getElementById('victorySongDismiss').classList.add('visible');
+  // Show YouTube overlay after confetti fires
+  setTimeout(showYouTubeOverlay, 600);
 
   // Confetti bursts
   const duration = 3000;
@@ -1913,9 +1930,45 @@ function closeCelebration() {
 }
 
 function stopVictorySong() {
-  const celebAudio = document.getElementById('celebrationAudio');
-  if (celebAudio) { celebAudio.pause(); celebAudio.currentTime = 0; }
   document.getElementById('victorySongDismiss').classList.remove('visible');
+}
+
+// ── YouTube player ──
+var ytPlayer = null;
+var ytAPIReady = false;
+function onYouTubeIframeAPIReady() { ytAPIReady = true; }
+
+function showYouTubeOverlay() {
+  document.getElementById('ytOverlay').classList.add('on');
+  if (typeof YT !== 'undefined' && YT.Player) {
+    createYTPlayer();
+  } else {
+    const poll = setInterval(() => {
+      if (typeof YT !== 'undefined' && YT.Player) {
+        clearInterval(poll); createYTPlayer();
+      }
+    }, 100);
+  }
+}
+
+function createYTPlayer() {
+  if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
+  // Ensure target div exists
+  const wrapper = document.getElementById('ytWrapper');
+  if (!document.getElementById('ytPlayerDiv')) {
+    wrapper.innerHTML = '<div id="ytPlayerDiv"></div>';
+  }
+  ytPlayer = new YT.Player('ytPlayerDiv', {
+    videoId: 'Xr032EhUDPw',
+    playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1, playsinline: 1 },
+    events: { onReady: e => e.target.playVideo() }
+  });
+}
+
+function closeYouTubeOverlay() {
+  if (ytPlayer) { try { ytPlayer.stopVideo(); ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
+  document.getElementById('ytWrapper').innerHTML = '<div id="ytPlayerDiv"></div>';
+  document.getElementById('ytOverlay').classList.remove('on');
 }
 
 // ── Yuta Motivation Card ──
