@@ -160,7 +160,7 @@ body {
 }
 
 .progress-ring-container {
-  flex-shrink: 0;
+  flex-shrink: 0; position: relative;
   display: flex; flex-direction: column; align-items: center;
   gap: 6px; overflow: visible; min-width: 90px;
 }
@@ -168,11 +168,12 @@ body {
 .cursed-energy-gif {
   width: 28px; height: 28px;
   object-fit: contain;
+  opacity: 0;
   transition: width 0.55s cubic-bezier(0.34,1.56,0.64,1),
               height 0.55s cubic-bezier(0.34,1.56,0.64,1),
-              filter 0.6s ease;
+              filter 0.6s ease,
+              opacity 0.5s ease;
   filter: brightness(0.7) saturate(1.2);
-  /* Dissolve hard edges into natural fire shape */
   -webkit-mask-image: radial-gradient(ellipse 62% 68% at 50% 50%,
     black 18%, rgba(0,0,0,0.85) 38%,
     rgba(0,0,0,0.4) 58%, transparent 76%);
@@ -182,13 +183,22 @@ body {
 }
 
 @keyframes gifBurst {
-  0%   { transform: scale(1); }
-  28%  { transform: scale(1.32); }
-  58%  { transform: scale(0.95); }
-  100% { transform: scale(1); }
+  0%   { transform: scale(1)           rotate(0deg); }
+  10%  { transform: scaleX(2.1) scaleY(0.55) rotate(-4deg); }
+  25%  { transform: scaleX(0.65) scaleY(1.7)  rotate(3deg);  }
+  42%  { transform: scaleX(1.35) scaleY(0.82) rotate(-2deg); }
+  58%  { transform: scaleX(0.88) scaleY(1.18) rotate(1deg);  }
+  74%  { transform: scaleX(1.08) scaleY(0.95) rotate(0deg);  }
+  100% { transform: scale(1)           rotate(0deg); }
 }
 
-.gif-burst { animation: gifBurst 0.48s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.gif-burst { animation: gifBurst 0.65s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+/* Spark particles shot on burst */
+.fire-spark {
+  position: absolute; border-radius: 50%;
+  top: 50%; left: 50%; pointer-events: none; z-index: 20;
+}
 
 .progress-pct {
   font-size: 12px; font-weight: 800;
@@ -824,6 +834,32 @@ function showTaskCheer(){
 }
 
 // ─── Progress ───
+function shootFireSparks(container, glowColor){
+  const sparkColors=['#ffffff','#4f6df5','#7c3aed','#06b6d4','#ec4899','#f59e0b'];
+  const count=14;
+  for(let i=0;i<count;i++){
+    const s=document.createElement('div');
+    s.className='fire-spark';
+    const sz=2+Math.random()*5;
+    s.style.width=sz+'px'; s.style.height=sz+'px';
+    s.style.background=sparkColors[Math.floor(Math.random()*sparkColors.length)];
+    s.style.boxShadow=`0 0 ${sz*2}px ${glowColor||'#4f6df5'}`;
+    container.appendChild(s);
+
+    // Heavy horizontal bias — fire explodes sideways
+    const angle=Math.random()*Math.PI*2;
+    const dist=30+Math.random()*75;
+    const dx=Math.cos(angle)*dist*1.7;
+    const dy=Math.sin(angle)*dist*0.55;
+
+    s.animate([
+      {transform:`translate(-50%,-50%) translate(0px,0px) scale(1)`, opacity:1},
+      {transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(0)`, opacity:0}
+    ],{duration:420+Math.random()*200, easing:'cubic-bezier(0.2,0,0.6,1)', fill:'forwards'})
+    .onfinish=()=>s.remove();
+  }
+}
+
 function updateProgress(){
   const schedule=S[activeTab];
   if(!schedule)return;
@@ -850,12 +886,16 @@ function updateProgress(){
     gif.style.width=size+'px';
     gif.style.height=size+'px';
 
-    // Burst animation when progress increases
-    if(pct>_lastPct){
+    // Show/hide based on progress
+    gif.style.opacity = pct === 0 ? '0' : '1';
+
+    // Burst + sparks when progress increases
+    if(pct > _lastPct && pct > 0){
       gif.classList.remove('gif-burst');
-      void gif.offsetWidth; // force reflow to restart
+      void gif.offsetWidth;
       gif.classList.add('gif-burst');
-      setTimeout(()=>gif.classList.remove('gif-burst'),500);
+      setTimeout(()=>gif.classList.remove('gif-burst'), 700);
+      shootFireSparks(gif.parentElement, gradeColor);
     }
 
     let glowColor='rgba(99,102,241,0.4)';
