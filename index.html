@@ -442,6 +442,18 @@ body {
 }
 .celebrate-btn:active { opacity: 0.85; }
 
+/* ── Victory song dismiss button ── */
+#victorySongDismiss {
+  display: none; position: fixed; bottom: 88px; right: 16px; z-index: 450;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 7px 12px;
+  font-size: 12px; font-weight: 600; color: var(--text2);
+  cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  align-items: center; gap: 6px; font-family: inherit;
+}
+#victorySongDismiss.visible { display: flex; }
+#victorySongDismiss:active { opacity: 0.75; }
+
 /* ── Toast Notifications ── */
 .toast {
   position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
@@ -834,6 +846,14 @@ body {
   </div>
 </div>
 <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoSelect(event)">
+
+<!-- ── Celebration audio ── -->
+<audio id="celebrationAudio">
+  <source src="victory-song.mp3" type="audio/mpeg">
+</audio>
+
+<!-- ── Victory song dismiss ── -->
+<button id="victorySongDismiss" onclick="stopVictorySong()">♫ Stop</button>
 
 <!-- ── Celebration ── -->
 <div class="celebrate-overlay" id="celebrateOverlay">
@@ -1829,6 +1849,16 @@ function triggerCelebration() {
   // Celebration chime — three rising notes (C5 → E5 → G5)
   playCelebrationChime();
 
+  // Play victory song
+  const celebAudio = document.getElementById('celebrationAudio');
+  if (celebAudio) {
+    celebAudio.volume = 0.7;
+    celebAudio.currentTime = 0;
+    celebAudio.play().catch(() => {});
+    celebAudio.onended = () => document.getElementById('victorySongDismiss').classList.remove('visible');
+  }
+  document.getElementById('victorySongDismiss').classList.add('visible');
+
   // Confetti bursts
   const duration = 3000;
   const end = Date.now() + duration;
@@ -1867,6 +1897,12 @@ function playCelebrationChime() {
 
 function closeCelebration() {
   document.getElementById('celebrateOverlay').classList.remove('on');
+}
+
+function stopVictorySong() {
+  const celebAudio = document.getElementById('celebrationAudio');
+  if (celebAudio) { celebAudio.pause(); celebAudio.currentTime = 0; }
+  document.getElementById('victorySongDismiss').classList.remove('visible');
 }
 
 // ── Yuta Motivation Card ──
