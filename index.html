@@ -317,6 +317,38 @@ body {
 }
 .sh-name { font-size: 15px; font-weight: 600; color: var(--text); }
 
+/* ── Streak Cards ── */
+.streak-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+}
+.streak-c {
+  background: var(--bg2); border-radius: var(--r);
+  border: 1.5px solid var(--border); padding: 14px 14px 12px;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.streak-c.leader { border-color: var(--accent); }
+.streak-c.george-c { border-color: rgba(0,122,255,0.3); }
+.streak-c.olivia-c { border-color: rgba(255,107,157,0.3); }
+.streak-name { font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--text2); margin-bottom: 6px; }
+.streak-val { display: flex; align-items: baseline; gap: 4px; }
+.streak-fire { font-size: 22px; line-height: 1; }
+.streak-fire.milestone { animation: fireFlare 0.6s ease infinite alternate; }
+@keyframes fireFlare {
+  from { transform: scale(1);   filter: brightness(1); }
+  to   { transform: scale(1.2); filter: brightness(1.3) drop-shadow(0 0 4px orange); }
+}
+.streak-num { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
+.streak-unit { font-size: 12px; color: var(--text2); font-weight: 500; }
+.streak-best { font-size: 11px; color: var(--text2); margin-top: 5px; }
+.sync-badge {
+  grid-column: 1 / -1; text-align: center;
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  background: rgba(88,86,214,0.08); border-radius: 99px;
+  padding: 6px 12px; margin-top: -4px;
+}
+
 /* ── Quick Pick ── */
 .qp-overlay {
   display: none; position: fixed; inset: 0; z-index: 300;
@@ -429,10 +461,12 @@ body {
         <div class="prog-num" id="progNum">—</div>
         <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
       </div>
+      <div id="streakRowToday"></div>
       <div class="tl" id="tlWrap"></div>
     </div>
 
     <div class="tab-panel" id="p-progress">
+      <div id="streakRowProgress"></div>
       <div class="rng-sel" id="rngSel"></div>
       <div class="chart-card">
         <div class="chart-hdr">
@@ -672,6 +706,7 @@ function selectUser(u) {
   document.getElementById('app').classList.add('on');
   updateChip();
   attachFirebase();
+  loadStreaks();
   renderPlans();
   renderRules();
 }
@@ -699,7 +734,7 @@ function goTab(tab) {
   document.getElementById('p-' + tab).classList.add('on');
   const titles = { today:'Today', progress:'Progress', plans:'Plans', rules:'Rules' };
   document.getElementById('hdrTitle').textContent = titles[tab];
-  if (tab === 'progress') renderProgressTab();
+  if (tab === 'progress') { loadStreaks(); renderProgressTab(); }
 }
 
 // ── Firebase ──
@@ -728,6 +763,103 @@ function attachFirebase() {
     }
   });
   fbOff = () => refToday(user).off();
+}
+
+// ── Streaks ──
+let streakCache = { george: null, olivia: null };
+
+function isWeekday(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const day = d.getDay();
+  return day >= 1 && day <= 5; // Mon–Fri
+}
+
+function prevWeekday(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  do { d.setDate(d.getDate() - 1); } while (d.getDay() === 0 || d.getDay() === 6);
+  return d.toISOString().split('T')[0];
+}
+
+async function updateStreak(u) {
+  if (!isWeekday(todayKey)) return; // weekends don't affect streaks
+  const checkinSnap = await db.ref(`/users/${u}/checkins/${todayKey}`).once('value');
+  const pct = checkinSnap.val()?.percentage ?? 0;
+  if (pct === 0) return; // don't update until they've done something today
+
+  const streakSnap = await db.ref(`/users/${u}/streak`).once('value');
+  let { current = 0, best = 0, lastCompletedDate = null } = streakSnap.val() || {};
+
+  const expectedPrev = prevWeekday(todayKey);
+  const passed = pct >= 70;
+
+  if (lastCompletedDate === todayKey) {
+    // Already recorded today — just check if best needs updating
+    if (passed && current > best) {
+      best = current;
+      await db.ref(`/users/${u}/streak`).update({ best });
+    }
+    return;
+  }
+
+  if (passed) {
+    // Check if yesterday's weekday was completed to extend streak
+    if (lastCompletedDate === expectedPrev) {
+      current += 1;
+    } else {
+      current = 1; // streak broken or first ever
+    }
+    if (current > best) best = current;
+    await db.ref(`/users/${u}/streak`).set({ current, best, lastCompletedDate: todayKey });
+  } else {
+    // Below 70% — reset streak
+    current = 0;
+    await db.ref(`/users/${u}/streak`).set({ current, best, lastCompletedDate: null });
+  }
+
+  streakCache[u] = { current, best };
+  renderStreakCards();
+}
+
+async function loadStreaks() {
+  const [gs, os] = await Promise.all([
+    db.ref('/users/george/streak').once('value'),
+    db.ref('/users/olivia/streak').once('value'),
+  ]);
+  streakCache.george = gs.val() || { current: 0, best: 0 };
+  streakCache.olivia = os.val() || { current: 0, best: 0 };
+  renderStreakCards();
+}
+
+function streakCardHTML(name, color, data, isLeader) {
+  const cur = data?.current ?? 0;
+  const best = data?.best ?? 0;
+  const milestone = cur >= 7;
+  return `
+    <div class="streak-c ${isLeader ? 'leader' : ''}">
+      <div class="streak-name" style="color:${color}">${name}</div>
+      <div class="streak-val">
+        <span class="streak-fire ${milestone ? 'milestone' : ''}">🔥</span>
+        <span class="streak-num">${cur}</span>
+        <span class="streak-unit">day${cur !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="streak-best">Best: ${best} day${best !== 1 ? 's' : ''}</div>
+    </div>`;
+}
+
+function renderStreakCards() {
+  const g = streakCache.george, o = streakCache.olivia;
+  const gc = g?.current ?? 0, oc = o?.current ?? 0;
+  const gLeader = gc > oc, oLeader = oc > gc, inSync = gc === oc && gc > 0;
+  const html = `
+    <div class="streak-row">
+      ${streakCardHTML('George', '#007AFF', g, gLeader)}
+      ${streakCardHTML('Olivia', '#FF6B9D', o, oLeader)}
+      ${inSync ? '<div class="sync-badge">🔗 In sync!</div>' : ''}
+    </div>`;
+  const t = document.getElementById('streakRowToday');
+  const p = document.getElementById('streakRowProgress');
+  if (t) t.innerHTML = html;
+  if (p) p.innerHTML = html;
 }
 
 // ── Quick Pick ──
@@ -854,7 +986,7 @@ function save() {
   refToday(user).set({
     dayType, tasks: checks, percentage: pct,
     updatedAt: firebase.database.ServerValue.TIMESTAMP
-  });
+  }).then(() => updateStreak(user));
 }
 
 // ── Today ──
@@ -1101,6 +1233,7 @@ if (savedUser) {
   document.getElementById('app').classList.add('on');
   updateChip();
   attachFirebase();
+  loadStreaks();
   renderPlans();
   renderRules();
 }
