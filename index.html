@@ -48,24 +48,51 @@ body {
 #loginScreen {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; min-height: 100vh; padding: 48px 24px;
-  background: var(--bg);
+  position: relative; overflow: hidden;
+  background: #0a0a12;
 }
+/* Animated GIF background — login only */
+#loginScreen::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  background-image: url('jjk-cast.webp');
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  opacity: 0.28;
+}
+/* Dark gradient overlay so text stays readable */
+#loginScreen::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(10,10,18,0.55) 0%,
+    rgba(10,10,18,0.25) 40%,
+    rgba(10,10,18,0.70) 100%
+  );
+}
+/* All direct children sit above the pseudo-element layers */
+#loginScreen > * { position: relative; z-index: 2; }
+
 .ls-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
-.ls-title { font-size: 34px; font-weight: 700; color: var(--text);
+  text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 12px; }
+.ls-title { font-size: 34px; font-weight: 700; color: #fff;
   margin-bottom: 6px; text-align: center; }
-.ls-sub { font-size: 17px; color: var(--text2); margin-bottom: 48px; text-align: center; }
+.ls-sub { font-size: 17px; color: rgba(255,255,255,0.6); margin-bottom: 48px; text-align: center; }
 .ls-cards { display: flex; gap: 14px; width: 100%; }
 .ls-card {
-  flex: 1; background: var(--bg2); border-radius: 22px;
-  border: 1px solid var(--border); padding: 28px 14px 22px;
+  flex: 1; background: rgba(255,255,255,0.10); border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.18); padding: 28px 14px 22px;
   display: flex; flex-direction: column; align-items: center; gap: 10px;
-  cursor: pointer; transition: transform 0.18s; box-shadow: var(--shadow);
+  cursor: pointer; transition: transform 0.18s;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
 }
 .ls-card:active { transform: scale(0.95); }
 .ls-av-wrap { margin-bottom: 4px; }
-.ls-name { font-size: 18px; font-weight: 700; color: var(--text); }
-.ls-role { font-size: 12px; color: var(--text2); text-align: center; }
+.ls-name { font-size: 18px; font-weight: 700; color: #fff; }
+.ls-role { font-size: 12px; color: rgba(255,255,255,0.55); text-align: center; }
 
 /* ── PIN Screen ── */
 #pinScreen {
