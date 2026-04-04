@@ -444,7 +444,7 @@ body {
 
 /* ── Video Celebration Background ── */
 #videoOverlay {
-  display: none; position: fixed; inset: 0; z-index: 2;
+  display: none; position: fixed; inset: 0; z-index: 0;
   pointer-events: none;
   overflow: hidden;
 }
@@ -457,10 +457,16 @@ body {
   transform: translate(-50%, -50%) rotate(90deg);
   transform-origin: center center;
   object-fit: cover;
-  opacity: 0.35;
+  opacity: 0.88;
+  filter: saturate(1.4) contrast(1.1);
   transition: opacity 1.5s ease;
 }
 #videoOverlay.fading #celebVideo { opacity: 0; }
+/* Dim all page content while celebrating so video dominates */
+.app.celebrating {
+  opacity: 0.18;
+  transition: opacity 0.4s ease;
+}
 #videoClose {
   display: none; position: fixed; bottom: 100px; right: 16px; z-index: 3;
   pointer-events: auto;
@@ -1696,8 +1702,14 @@ function toggleCheck(e, i) {
   const wasChecked = !!checks[i];
   checks[i] = !checks[i];
   if (!wasChecked) {
-    // Checking (not unchecking) → Black Flash
+    // Checking → Black Flash
     triggerBlackFlash(e.currentTarget);
+  } else {
+    // Unchecking — if celebration is active, stop it immediately
+    if (document.getElementById('videoOverlay').classList.contains('on')) {
+      closeVideoOverlay();
+      if (typeof confetti === 'function' && confetti.reset) confetti.reset();
+    }
   }
   renderTodayBody();
   save();
@@ -1924,6 +1936,7 @@ function showVideoOverlay() {
   overlay.classList.remove('fading');
   overlay.classList.add('on');
   closeBtn.classList.add('on');
+  document.getElementById('app').classList.add('celebrating');
   video.currentTime = 0;
   video.volume = 0.7;
   video.muted = false;
@@ -1945,6 +1958,7 @@ function fadeOutVideo() {
   const closeBtn = document.getElementById('videoClose');
   overlay.classList.add('fading');
   closeBtn.classList.remove('on');
+  document.getElementById('app').classList.remove('celebrating');
   setTimeout(() => {
     video.pause();
     video.currentTime = 0;
