@@ -834,30 +834,126 @@ function showTaskCheer(){
 }
 
 // ─── Progress ───
-function shootFireSparks(container, glowColor){
-  const sparkColors=['#ffffff','#4f6df5','#7c3aed','#06b6d4','#ec4899','#f59e0b'];
-  const count=14;
-  for(let i=0;i<count;i++){
-    const s=document.createElement('div');
-    s.className='fire-spark';
-    const sz=2+Math.random()*5;
-    s.style.width=sz+'px'; s.style.height=sz+'px';
-    s.style.background=sparkColors[Math.floor(Math.random()*sparkColors.length)];
-    s.style.boxShadow=`0 0 ${sz*2}px ${glowColor||'#4f6df5'}`;
-    container.appendChild(s);
+function shootCanvasFlames(gifEl){
+  const rect=gifEl.getBoundingClientRect();
+  const cx=rect.left+rect.width/2;
+  const cy=rect.top+rect.height/2;
 
-    // Heavy horizontal bias — fire explodes sideways
-    const angle=Math.random()*Math.PI*2;
-    const dist=30+Math.random()*75;
-    const dx=Math.cos(angle)*dist*1.7;
-    const dy=Math.sin(angle)*dist*0.55;
+  const canvas=document.createElement('canvas');
+  canvas.style.cssText='position:fixed;top:0;left:0;pointer-events:none;z-index:200;';
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx=canvas.getContext('2d');
 
-    s.animate([
-      {transform:`translate(-50%,-50%) translate(0px,0px) scale(1)`, opacity:1},
-      {transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(0)`, opacity:0}
-    ],{duration:420+Math.random()*200, easing:'cubic-bezier(0.2,0,0.6,1)', fill:'forwards'})
-    .onfinish=()=>s.remove();
+  // Energy tendrils — 3 main horizontal blasts each side + scattered diagonals
+  const tendrils=[];
+  [0, Math.PI].forEach(base=>{
+    for(let j=0;j<4;j++){
+      const spread=(Math.random()-0.5)*Math.PI*0.55;
+      tendrils.push({
+        angle:base+spread,
+        len:55+Math.random()*80,
+        w:2+Math.random()*4,
+        color:['#ffffff','#4f6df5','#06b6d4','#a5b4fc'][Math.floor(Math.random()*4)],
+        wobble:(Math.random()-0.5)*28,
+        phase:Math.random()*0.12,
+      });
+    }
+  });
+  // Diagonal thinner tendrils
+  for(let i=0;i<5;i++){
+    tendrils.push({
+      angle:Math.random()*Math.PI*2,
+      len:22+Math.random()*38,
+      w:1+Math.random()*1.8,
+      color:['#4f6df5','#06b6d4','#c4b5fd'][Math.floor(Math.random()*3)],
+      wobble:(Math.random()-0.5)*18,
+      phase:Math.random()*0.18,
+    });
   }
+
+  // Energy blobs (glowing orb-bursts from the image)
+  const blobs=Array.from({length:5},(_,i)=>{
+    const base=i<2?i*Math.PI:(Math.PI*0.5+(i-2)*Math.PI*0.75);
+    return{
+      angle:base+(Math.random()-0.5)*0.7,
+      maxDist:22+Math.random()*35,
+      size:6+Math.random()*14,
+      color:i%2===0?'#4f6df5':'#06b6d4',
+    };
+  });
+
+  const t0=performance.now(), dur=520;
+
+  function frame(now){
+    const t=Math.min((now-t0)/dur,1);
+    if(t>=1){canvas.remove();return;}
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.lineCap='round'; ctx.lineJoin='round';
+
+    // White center flash — fades fast
+    const fa=Math.max(0,1-t*2.8);
+    if(fa>0){
+      const fg=ctx.createRadialGradient(cx,cy,0,cx,cy,28);
+      fg.addColorStop(0,`rgba(255,255,255,${fa})`);
+      fg.addColorStop(0.45,`rgba(79,109,245,${fa*0.7})`);
+      fg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=fg; ctx.globalAlpha=1;
+      ctx.beginPath(); ctx.arc(cx,cy,28,0,Math.PI*2); ctx.fill();
+    }
+
+    // Glowing energy blobs
+    blobs.forEach(b=>{
+      const ft=Math.min(t*2.2,1);
+      const d=b.maxDist*ft;
+      const bx=cx+Math.cos(b.angle)*d, by=cy+Math.sin(b.angle)*d;
+      const a=1-t;
+      const r=b.size*(0.4+ft*0.8);
+      const bg=ctx.createRadialGradient(bx,by,0,bx,by,r);
+      bg.addColorStop(0,`rgba(255,255,255,${a*0.95})`);
+      bg.addColorStop(0.35,`rgba(79,109,245,${a*0.75})`);
+      bg.addColorStop(0.7,`rgba(6,182,212,${a*0.4})`);
+      bg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=bg; ctx.globalAlpha=1;
+      ctx.beginPath(); ctx.arc(bx,by,r,0,Math.PI*2); ctx.fill();
+    });
+
+    // Irregular curved tendrils
+    tendrils.forEach(td=>{
+      if(t<td.phase)return;
+      const ft=Math.min((t-td.phase)/(1-td.phase),1);
+      const len=td.len*ft;
+      const a=ft<0.35?ft/0.35:1-(ft-0.35)/0.65;
+      const ex=cx+Math.cos(td.angle)*len;
+      const ey=cy+Math.sin(td.angle)*len;
+      const cpx=cx+Math.cos(td.angle)*len*0.45+td.wobble;
+      const cpy=cy+Math.sin(td.angle)*len*0.45+td.wobble*0.4;
+
+      ctx.globalAlpha=a;
+      ctx.shadowColor=td.color; ctx.shadowBlur=10;
+
+      // Glow pass (wide)
+      ctx.beginPath(); ctx.moveTo(cx,cy);
+      ctx.quadraticCurveTo(cpx,cpy,ex,ey);
+      ctx.strokeStyle=td.color; ctx.lineWidth=td.w*2.5;
+      ctx.globalAlpha=a*0.35; ctx.stroke();
+
+      // Core pass (bright)
+      ctx.beginPath(); ctx.moveTo(cx,cy);
+      ctx.quadraticCurveTo(cpx,cpy,ex,ey);
+      ctx.strokeStyle='#ffffff'; ctx.lineWidth=td.w*0.6;
+      ctx.globalAlpha=a*0.9; ctx.stroke();
+
+      // Tip dot
+      ctx.beginPath(); ctx.arc(ex,ey,td.w*0.9,0,Math.PI*2);
+      ctx.fillStyle='#ffffff'; ctx.globalAlpha=a*0.85; ctx.fill();
+    });
+
+    ctx.shadowBlur=0; ctx.globalAlpha=1;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 }
 
 function updateProgress(){
@@ -886,16 +982,17 @@ function updateProgress(){
     gif.style.width=size+'px';
     gif.style.height=size+'px';
 
-    // Show/hide based on progress
+    // Completely hidden at 0%
     gif.style.opacity = pct === 0 ? '0' : '1';
+    gif.style.visibility = pct === 0 ? 'hidden' : 'visible';
 
-    // Burst + sparks when progress increases
+    // Burst + canvas flames when progress increases
     if(pct > _lastPct && pct > 0){
       gif.classList.remove('gif-burst');
       void gif.offsetWidth;
       gif.classList.add('gif-burst');
       setTimeout(()=>gif.classList.remove('gif-burst'), 700);
-      shootFireSparks(gif.parentElement, gradeColor);
+      shootCanvasFlames(gif);
     }
 
     let glowColor='rgba(99,102,241,0.4)';
