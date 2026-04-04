@@ -1450,7 +1450,7 @@ async function loadStreaks() {
 }
 
 function cursedFlameSVG(milestone) {
-  return `<img class="streak-fire ${milestone ? 'milestone' : ''}" src="jjk-fire.gif" width="44" height="44" style="object-fit:contain;display:inline-block;vertical-align:middle;mix-blend-mode:screen;">`;
+  return `<img class="streak-fire ${milestone ? 'milestone' : ''}" src="jjk-fire.gif" width="44" height="44" style="object-fit:contain;display:inline-block;vertical-align:middle;-webkit-mask-image:radial-gradient(ellipse 48% 52% at 50% 50%, black 35%, transparent 72%);mask-image:radial-gradient(ellipse 48% 52% at 50% 50%, black 35%, transparent 72%);">`;
 }
 
 function streakCardHTML(name, color, data, isLeader) {
