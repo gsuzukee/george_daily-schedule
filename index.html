@@ -44,32 +44,101 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Welcome ── */
-.welcome {
+/* ── Login Screen ── */
+#loginScreen {
   display: flex; flex-direction: column; align-items: center;
-  justify-content: center; min-height: 100vh; padding: 48px 28px;
+  justify-content: center; min-height: 100vh; padding: 48px 24px;
+  background: var(--bg);
 }
-.wlc-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--text2); margin-bottom: 14px; }
-.wlc-title { font-size: 36px; font-weight: 700; color: var(--text);
-  margin-bottom: 8px; text-align: center; }
-.wlc-sub { font-size: 17px; color: var(--text2); margin-bottom: 52px; text-align: center; }
-.user-cards { display: flex; gap: 14px; width: 100%; }
-.user-card {
-  flex: 1; background: var(--bg2); border-radius: 20px;
-  border: 1px solid var(--border); padding: 30px 16px 24px;
+.ls-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
+.ls-title { font-size: 34px; font-weight: 700; color: var(--text);
+  margin-bottom: 6px; text-align: center; }
+.ls-sub { font-size: 17px; color: var(--text2); margin-bottom: 48px; text-align: center; }
+.ls-cards { display: flex; gap: 14px; width: 100%; }
+.ls-card {
+  flex: 1; background: var(--bg2); border-radius: 22px;
+  border: 1px solid var(--border); padding: 28px 14px 22px;
   display: flex; flex-direction: column; align-items: center; gap: 10px;
-  cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
-  box-shadow: var(--shadow);
+  cursor: pointer; transition: transform 0.18s; box-shadow: var(--shadow);
 }
-.user-card:active { transform: scale(0.96); }
-.u-avatar {
-  width: 68px; height: 68px; border-radius: 50%;
+.ls-card:active { transform: scale(0.95); }
+.ls-av-wrap { margin-bottom: 4px; }
+.ls-name { font-size: 18px; font-weight: 700; color: var(--text); }
+.ls-role { font-size: 12px; color: var(--text2); text-align: center; }
+
+/* ── PIN Screen ── */
+#pinScreen {
+  display: none; position: fixed; inset: 0; z-index: 600;
+  background: var(--bg); flex-direction: column; align-items: center;
+  padding: max(env(safe-area-inset-top), 20px) 32px calc(env(safe-area-inset-bottom) + 20px);
+}
+#pinScreen.on { display: flex; }
+.pin-back {
+  align-self: flex-start; font-size: 16px; font-weight: 500;
+  color: var(--accent); background: none; border: none;
+  cursor: pointer; padding: 4px 0; font-family: inherit;
+}
+.pin-user-area {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+}
+.pin-uname { font-size: 20px; font-weight: 700; color: var(--text); }
+.pin-status { font-size: 15px; color: var(--text2); }
+.pin-dots { display: flex; gap: 18px; margin: 6px 0 2px; }
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--text2); background: transparent; transition: all 0.12s;
+}
+.pin-dot.filled { background: var(--text); border-color: var(--text); }
+.pin-dot.err { background: #FF3B30; border-color: #FF3B30; }
+@keyframes pinShake {
+  0%,100% { transform:translateX(0); }
+  20% { transform:translateX(-9px); }
+  40% { transform:translateX(9px); }
+  60% { transform:translateX(-6px); }
+  80% { transform:translateX(6px); }
+}
+.pin-dots.shake { animation: pinShake 0.38s ease; }
+.pin-err-msg { font-size: 13px; color: #FF3B30; min-height: 18px; }
+.pin-pad {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 14px; width: 100%; max-width: 296px; padding-bottom: 8px;
+}
+.pin-key {
+  aspect-ratio: 1; border-radius: 50%; border: none;
+  background: var(--bg2); color: var(--text);
+  font-size: 26px; font-weight: 400; cursor: pointer;
+  font-family: inherit; box-shadow: var(--shadow);
   display: flex; align-items: center; justify-content: center;
-  font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px;
+  transition: background 0.1s, transform 0.08s;
+  -webkit-tap-highlight-color: transparent;
 }
-.u-name { font-size: 18px; font-weight: 700; color: var(--text); }
-.u-role { font-size: 12px; color: var(--text2); text-align: center; }
+.pin-key:active { background: var(--bg3); transform: scale(0.94); }
+.pin-key.del { font-size: 22px; background: transparent; box-shadow: none; color: var(--text); }
+.pin-key.empty { background: transparent; box-shadow: none; pointer-events: none; }
+
+/* ── Profile Sheet ── */
+.prof-hdr { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.prof-hdr-info {}
+.prof-hdr-name { font-size: 18px; font-weight: 700; color: var(--text); }
+.prof-hdr-role { font-size: 13px; color: var(--text2); }
+.prof-action {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: opacity 0.15s;
+}
+.prof-action:last-child { border-bottom: none; padding-bottom: 0; }
+.prof-action:active { opacity: 0.6; }
+.prof-ico {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--bg3); display: flex; align-items: center;
+  justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.prof-action-text { flex: 1; }
+.prof-action-label { font-size: 15px; font-weight: 500; color: var(--text); }
+.prof-action-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.prof-arr { color: var(--text2); font-size: 16px; }
 
 /* ── App Shell ── */
 .app { display: none; flex-direction: column; min-height: 100vh; }
@@ -516,22 +585,53 @@ body {
 </head>
 <body>
 
-<!-- ── Welcome ── -->
-<div class="welcome" id="welcome">
-  <div class="wlc-eyebrow">Daily Blueprint</div>
-  <div class="wlc-title">Good morning ☀️</div>
-  <div class="wlc-sub">Who's checking in?</div>
-  <div class="user-cards">
-    <div class="user-card" onclick="selectUser('george')">
-      <div class="u-avatar" style="background:#007AFF">G</div>
-      <div class="u-name">George</div>
-      <div class="u-role">Uber Eats AE</div>
+<!-- ── Login Screen ── -->
+<div id="loginScreen">
+  <div class="ls-eyebrow">Daily Blueprint</div>
+  <div class="ls-title">Welcome back 👋</div>
+  <div class="ls-sub">Who's checking in?</div>
+  <div class="ls-cards">
+    <div class="ls-card" onclick="startPinFlow('george')">
+      <div class="ls-av-wrap" id="lsAvGeorge"></div>
+      <div class="ls-name">George</div>
+      <div class="ls-role">Uber Eats AE</div>
     </div>
-    <div class="user-card" onclick="selectUser('olivia')">
-      <div class="u-avatar" style="background:#FF6B9D">O</div>
-      <div class="u-name">Olivia</div>
-      <div class="u-role">Stripe SWE</div>
+    <div class="ls-card" onclick="startPinFlow('olivia')">
+      <div class="ls-av-wrap" id="lsAvOlivia"></div>
+      <div class="ls-name">Olivia</div>
+      <div class="ls-role">Stripe SWE</div>
     </div>
+  </div>
+</div>
+
+<!-- ── PIN Screen ── -->
+<div id="pinScreen">
+  <button class="pin-back" onclick="backFromPin()">‹ Back</button>
+  <div class="pin-user-area">
+    <div id="pinAvWrap"></div>
+    <div class="pin-uname" id="pinUname"></div>
+    <div class="pin-status" id="pinStatus"></div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-err-msg" id="pinErrMsg"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pinInput('1')">1</button>
+    <button class="pin-key" onclick="pinInput('2')">2</button>
+    <button class="pin-key" onclick="pinInput('3')">3</button>
+    <button class="pin-key" onclick="pinInput('4')">4</button>
+    <button class="pin-key" onclick="pinInput('5')">5</button>
+    <button class="pin-key" onclick="pinInput('6')">6</button>
+    <button class="pin-key" onclick="pinInput('7')">7</button>
+    <button class="pin-key" onclick="pinInput('8')">8</button>
+    <button class="pin-key" onclick="pinInput('9')">9</button>
+    <div class="pin-key empty"></div>
+    <button class="pin-key" onclick="pinInput('0')">0</button>
+    <button class="pin-key del" onclick="pinDelete()">⌫</button>
   </div>
 </div>
 
@@ -544,8 +644,8 @@ body {
       <button class="bell-btn" onclick="openNotifPanel()" id="bellBtn">
         🔔<div class="bell-dot" id="bellDot"></div>
       </button>
-      <div class="chip" onclick="openSheet()">
-        <div class="chip-av" id="chipAv"></div>
+      <div class="chip" onclick="openProfileSheet()">
+        <div id="chipAvWrap"></div>
         <div class="chip-name" id="chipName"></div>
       </div>
     </div>
@@ -608,22 +708,43 @@ body {
   </div>
 </div>
 
-<!-- ── User Sheet ── -->
-<div class="overlay" id="overlay" onclick="maybeCloseSheet(event)">
+<!-- ── Profile Sheet ── -->
+<div class="overlay" id="profileOverlay" onclick="maybeCloseProfileSheet(event)">
   <div class="sheet">
-    <div class="sheet-ttl">Switch User</div>
-    <div class="sheet-users">
-      <div class="sh-user" id="shG" onclick="selectUser('george')">
-        <div class="sh-av" style="background:#007AFF">G</div>
-        <div class="sh-name">George</div>
+    <div class="prof-hdr">
+      <div id="profSheetAvWrap"></div>
+      <div class="prof-hdr-info">
+        <div class="prof-hdr-name" id="profSheetName"></div>
+        <div class="prof-hdr-role" id="profSheetRole"></div>
       </div>
-      <div class="sh-user" id="shO" onclick="selectUser('olivia')">
-        <div class="sh-av" style="background:#FF6B9D">O</div>
-        <div class="sh-name">Olivia</div>
+    </div>
+    <div class="prof-action" onclick="triggerPhotoPick()">
+      <div class="prof-ico">📷</div>
+      <div class="prof-action-text">
+        <div class="prof-action-label">Edit profile picture</div>
+        <div class="prof-action-sub">Choose from camera roll</div>
       </div>
+      <div class="prof-arr">›</div>
+    </div>
+    <div class="prof-action" onclick="startChangePIN()">
+      <div class="prof-ico">🔒</div>
+      <div class="prof-action-text">
+        <div class="prof-action-label">Change PIN</div>
+        <div class="prof-action-sub">Update your 4-digit PIN</div>
+      </div>
+      <div class="prof-arr">›</div>
+    </div>
+    <div class="prof-action" onclick="switchUser()">
+      <div class="prof-ico">👤</div>
+      <div class="prof-action-text">
+        <div class="prof-action-label">Switch user</div>
+        <div class="prof-action-sub">Return to login screen</div>
+      </div>
+      <div class="prof-arr">›</div>
     </div>
   </div>
 </div>
+<input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoSelect(event)">
 
 <!-- ── Celebration ── -->
 <div class="celebrate-overlay" id="celebrateOverlay">
@@ -810,8 +931,244 @@ let chartInst = null;
 let range = '1W';
 let todayKey = new Date().toISOString().split('T')[0];
 let fbOff = null;
-let qpShown = false;      // guard so Quick Pick only shows once per session
-let weekPlan = {};        // Sunday Reset plan
+let qpShown = false;
+let weekPlan = {};
+let profilePics = { george: null, olivia: null };
+
+// ── PIN state ──
+let pinTargetUser = null;
+let pinMode = 'verify';   // 'verify' | 'create' | 'confirm'
+let pinBuffer = '';
+let pinFirstEntry = '';
+let isChangingPin = false;
+
+// ── SHA-256 ──
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Avatar helper ──
+function avatarEl(u, sizePx) {
+  const pic = profilePics[u];
+  const color = u === 'george' ? '#007AFF' : '#FF6B9D';
+  const init  = u === 'george' ? 'G' : 'O';
+  const fs = Math.round(sizePx * 0.4);
+  const base = `width:${sizePx}px;height:${sizePx}px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:${fs}px;background:${color};flex-shrink:0`;
+  return pic
+    ? `<div style="${base}"><img src="${pic}" style="width:100%;height:100%;object-fit:cover;display:block"></div>`
+    : `<div style="${base}">${init}</div>`;
+}
+
+// ── Profile Pictures ──
+async function loadProfilePics() {
+  const [gs, os] = await Promise.all([
+    db.ref('/users/george/profilePic').once('value'),
+    db.ref('/users/olivia/profilePic').once('value'),
+  ]);
+  profilePics.george = gs.val() || null;
+  profilePics.olivia = os.val() || null;
+  updateLoginAvatars();
+  if (user) updateChip();
+}
+
+function updateLoginAvatars() {
+  const g = document.getElementById('lsAvGeorge');
+  const o = document.getElementById('lsAvOlivia');
+  if (g) g.innerHTML = avatarEl('george', 72);
+  if (o) o.innerHTML = avatarEl('olivia', 72);
+}
+
+function triggerPhotoPick() {
+  closeProfileSheet();
+  document.getElementById('photoInput').click();
+}
+
+function handlePhotoSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 150; canvas.height = 150;
+      const ctx = canvas.getContext('2d');
+      // Centre-crop to square then scale to 150×150
+      const sz = Math.min(img.width, img.height);
+      const sx = (img.width  - sz) / 2;
+      const sy = (img.height - sz) / 2;
+      ctx.drawImage(img, sx, sy, sz, sz, 0, 0, 150, 150);
+      const b64 = canvas.toDataURL('image/jpeg', 0.6);
+      profilePics[user] = b64;
+      db.ref(`/users/${user}/profilePic`).set(b64);
+      updateChip();
+      updateLoginAvatars();
+      showToast('📷', 'Profile updated', 'Your new profile picture is saved.');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = ''; // reset so same file can be re-selected
+}
+
+// ── PIN Screen ──
+async function startPinFlow(u) {
+  pinTargetUser = u;
+  isChangingPin = false;
+  const snap = await db.ref(`/users/${u}/pin`).once('value');
+  setPinMode(snap.val() ? 'verify' : 'create');
+  showPinScreen();
+}
+
+function showPinScreen() {
+  const u = pinTargetUser;
+  document.getElementById('pinAvWrap').innerHTML = avatarEl(u, 72);
+  document.getElementById('pinUname').textContent = u === 'george' ? 'George' : 'Olivia';
+  pinBuffer = ''; pinFirstEntry = '';
+  updatePinDots(); updatePinStatus(); clearPinError();
+  document.getElementById('pinScreen').classList.add('on');
+}
+
+function hidePinScreen() {
+  document.getElementById('pinScreen').classList.remove('on');
+  pinBuffer = ''; pinFirstEntry = '';
+}
+
+function backFromPin() {
+  hidePinScreen();
+  if (isChangingPin) {
+    openProfileSheet();
+  }
+  // else: login screen is already visible underneath
+}
+
+function setPinMode(mode) {
+  pinMode = mode;
+  updatePinStatus();
+  clearPinError();
+  pinBuffer = '';
+  updatePinDots();
+}
+
+function updatePinStatus() {
+  const labels = {
+    verify:  'Enter your PIN',
+    create:  'Create your PIN',
+    confirm: 'Confirm your PIN',
+  };
+  document.getElementById('pinStatus').textContent = labels[pinMode] || '';
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('pd' + i);
+    d.classList.toggle('filled', i < pinBuffer.length);
+    d.classList.remove('err');
+  }
+}
+
+function clearPinError() {
+  document.getElementById('pinErrMsg').textContent = '';
+}
+
+function pinInput(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(pinSubmit, 80);
+}
+
+function pinDelete() {
+  if (pinBuffer.length > 0) { pinBuffer = pinBuffer.slice(0, -1); updatePinDots(); }
+}
+
+async function pinSubmit() {
+  const hash = await sha256(pinBuffer);
+
+  if (pinMode === 'create') {
+    pinFirstEntry = pinBuffer;
+    setPinMode('confirm');
+    return;
+  }
+
+  if (pinMode === 'confirm') {
+    if (pinBuffer !== pinFirstEntry) {
+      pinError("PINs don't match — try again");
+      setTimeout(() => setPinMode('create'), 800);
+      return;
+    }
+    await db.ref(`/users/${pinTargetUser}/pin`).set(hash);
+    if (isChangingPin) {
+      hidePinScreen();
+      openProfileSheet();
+      showToast('🔒', 'PIN updated', 'Your new PIN has been saved.');
+    } else {
+      loginUser(pinTargetUser);
+    }
+    return;
+  }
+
+  if (pinMode === 'verify') {
+    const snap = await db.ref(`/users/${pinTargetUser}/pin`).once('value');
+    if (snap.val() === hash) {
+      if (isChangingPin) {
+        setPinMode('create');
+        pinFirstEntry = '';
+        return;
+      }
+      loginUser(pinTargetUser);
+    } else {
+      pinError('Wrong PIN');
+    }
+  }
+}
+
+function pinError(msg) {
+  document.getElementById('pinErrMsg').textContent = msg;
+  const dots = document.getElementById('pinDots');
+  for (let i = 0; i < 4; i++) document.getElementById('pd' + i).classList.add('err');
+  dots.classList.add('shake');
+  dots.addEventListener('animationend', () => dots.classList.remove('shake'), { once: true });
+  pinBuffer = '';
+  setTimeout(updatePinDots, 400);
+}
+
+// ── Change PIN from profile ──
+function startChangePIN() {
+  closeProfileSheet();
+  isChangingPin = true;
+  pinTargetUser = user;
+  setPinMode('verify');
+  showPinScreen();
+}
+
+// ── Login / logout ──
+function loginUser(u) {
+  user = u;
+  sessionStorage.setItem('bp_session_user', u);
+  qpShown = false;
+  hidePinScreen();
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').classList.add('on');
+  updateChip();
+  attachFirebase();
+  loadStreaks();
+  initNotifs();
+  renderPlans();
+  renderRules();
+}
+
+function switchUser() {
+  closeProfileSheet();
+  // Stop Firebase listener
+  if (fbOff) { fbOff(); fbOff = null; }
+  sessionStorage.removeItem('bp_session_user');
+  user = null;
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('loginScreen').style.display = '';
+  updateLoginAvatars();
+}
 
 // ── Theme ──
 function initTheme() {
@@ -829,34 +1186,23 @@ function toggleTheme() {
   if (activeTab === 'progress' && chartInst) renderProgressTab();
 }
 
-// ── User ──
-function selectUser(u) {
-  user = u;
-  localStorage.setItem('bp_user', u);
-  qpShown = false; // reset so Quick Pick can show for new user selection
-  document.getElementById('overlay').classList.remove('on');
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('app').classList.add('on');
-  updateChip();
-  attachFirebase();
-  loadStreaks();
-  initNotifs();
-  renderPlans();
-  renderRules();
-}
+// ── Chip / Profile Sheet ──
 function updateChip() {
-  const av = document.getElementById('chipAv');
-  const nm = document.getElementById('chipName');
-  av.style.background = user === 'george' ? '#007AFF' : '#FF6B9D';
-  av.textContent = user === 'george' ? 'G' : 'O';
-  nm.textContent = user === 'george' ? 'George' : 'Olivia';
-  document.getElementById('shG').classList.toggle('on', user === 'george');
-  document.getElementById('shO').classList.toggle('on', user === 'olivia');
+  if (!user) return;
+  document.getElementById('chipAvWrap').innerHTML = avatarEl(user, 26);
+  document.getElementById('chipName').textContent = user === 'george' ? 'George' : 'Olivia';
 }
-function openSheet() { document.getElementById('overlay').classList.add('on'); }
-function maybeCloseSheet(e) {
-  if (e.target === document.getElementById('overlay'))
-    document.getElementById('overlay').classList.remove('on');
+
+function openProfileSheet() {
+  if (!user) return;
+  document.getElementById('profSheetAvWrap').innerHTML = avatarEl(user, 52);
+  document.getElementById('profSheetName').textContent = user === 'george' ? 'George' : 'Olivia';
+  document.getElementById('profSheetRole').textContent = user === 'george' ? 'Uber Eats AE' : 'Stripe SWE';
+  document.getElementById('profileOverlay').classList.add('on');
+}
+function closeProfileSheet() { document.getElementById('profileOverlay').classList.remove('on'); }
+function maybeCloseProfileSheet(e) {
+  if (e.target === document.getElementById('profileOverlay')) closeProfileSheet();
 }
 
 // ── Tab Nav ──
@@ -1543,10 +1889,12 @@ function renderNotifList() {
 
 // ── Init ──
 initTheme();
-const savedUser = localStorage.getItem('bp_user');
-if (savedUser) {
-  user = savedUser;
-  document.getElementById('welcome').style.display = 'none';
+// Load profile pics for login screen immediately (no auth required)
+loadProfilePics();
+const sessionUser = sessionStorage.getItem('bp_session_user');
+if (sessionUser) {
+  user = sessionUser;
+  document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').classList.add('on');
   updateChip();
   attachFirebase();
