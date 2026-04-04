@@ -317,6 +317,72 @@ body {
 }
 .sh-name { font-size: 15px; font-weight: 600; color: var(--text); }
 
+/* ── Toast Notifications ── */
+.toast {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
+  width: 100%; max-width: 430px; z-index: 500;
+  padding: 14px 18px 14px 16px;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  display: flex; align-items: flex-start; gap: 10px;
+  transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast-ico { font-size: 18px; flex-shrink: 0; padding-top: 1px; }
+.toast-body { flex: 1; }
+.toast-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.toast-msg { font-size: 13px; color: var(--text2); line-height: 1.4; }
+.toast-close { font-size: 16px; color: var(--text2); cursor: pointer; flex-shrink: 0;
+  padding: 0 2px; line-height: 1; align-self: flex-start; }
+
+/* ── Notif Settings Panel ── */
+.notif-panel {
+  display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 150;
+}
+.notif-panel.on { display: block; }
+.notif-backdrop { position: absolute; inset: 0; }
+.notif-card {
+  position: absolute; top: 58px; right: 12px;
+  background: var(--bg2); border-radius: 16px; padding: 16px;
+  border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  width: 280px; max-width: calc(100vw - 24px);
+  animation: fadeUp 0.2s ease both;
+}
+.notif-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.notif-hdr-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.notif-toggle {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text2);
+}
+.toggle-sw {
+  width: 44px; height: 26px; border-radius: 13px; border: none;
+  background: var(--bg3); cursor: pointer; position: relative; transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle-sw::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle-sw.on { background: var(--green); }
+.toggle-sw.on::after { transform: translateX(18px); }
+.notif-list { display: flex; flex-direction: column; gap: 6px; }
+.notif-time-row { display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.notif-time { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.notif-desc { color: var(--text2); text-align: right; max-width: 170px; line-height: 1.3; }
+.bell-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--bg2); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; position: relative;
+}
+.bell-dot {
+  position: absolute; top: 4px; right: 4px; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--accent);
+  border: 1.5px solid var(--bg); display: none;
+}
+.bell-dot.on { display: block; }
+
 /* ── Streak Cards ── */
 .streak-row {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
@@ -446,6 +512,9 @@ body {
     <div class="hdr-title" id="hdrTitle">Today</div>
     <div class="hdr-right">
       <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+      <button class="bell-btn" onclick="openNotifPanel()" id="bellBtn">
+        🔔<div class="bell-dot" id="bellDot"></div>
+      </button>
       <div class="chip" onclick="openSheet()">
         <div class="chip-av" id="chipAv"></div>
         <div class="chip-name" id="chipName"></div>
@@ -524,6 +593,31 @@ body {
         <div class="sh-name">Olivia</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast">
+  <div class="toast-ico" id="toastIco">🔔</div>
+  <div class="toast-body">
+    <div class="toast-title" id="toastTitle"></div>
+    <div class="toast-msg" id="toastMsg"></div>
+  </div>
+  <div class="toast-close" onclick="hideToast()">✕</div>
+</div>
+
+<!-- ── Notif Settings Panel ── -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-backdrop" onclick="closeNotifPanel()"></div>
+  <div class="notif-card">
+    <div class="notif-hdr">
+      <div class="notif-hdr-title">Reminders</div>
+      <div class="notif-toggle">
+        <span id="notifToggleLabel">Off</span>
+        <button class="toggle-sw" id="notifToggleSw" onclick="toggleNotifs()"></button>
+      </div>
+    </div>
+    <div class="notif-list" id="notifList"></div>
   </div>
 </div>
 
@@ -707,6 +801,7 @@ function selectUser(u) {
   updateChip();
   attachFirebase();
   loadStreaks();
+  initNotifs();
   renderPlans();
   renderRules();
 }
@@ -1224,6 +1319,120 @@ function renderRules() {
       </div>`).join('')}`;
 }
 
+// ── Notifications ──
+const NOTIF_SCHEDULE = {
+  earlyNormal: [
+    { time:'06:00', ico:'☀️', title:'Early Day', msg:'Time to get up! Early Day starts now.' },
+    { time:'17:30', ico:'🍳', title:'Kitchen time', msg:'George: head to the kitchen. No couch detour.' },
+  ],
+  earlyClimb: [
+    { time:'06:00', ico:'☀️', title:'Early + Climb/Dance', msg:'Morning! No gym today — career growth block starts now.' },
+    { time:'17:00', ico:'🧗', title:'Activity time', msg:'Head to climbing/dance!' },
+  ],
+  lateNormal: [
+    { time:'08:00', ico:'☀️', title:'Late Day', msg:'Late day — just get ready and go.' },
+    { time:'17:15', ico:'💪', title:'Gym time', msg:'Change and head to the building gym!' },
+  ],
+  lateClimb: [
+    { time:'08:00', ico:'☀️', title:'Late + Climb/Dance', msg:'Late day. Activity tonight — no gym needed.' },
+    { time:'17:00', ico:'🧗', title:'Activity time', msg:'Head to climbing/dance!' },
+  ],
+  friday: [
+    { time:'06:00', ico:'🌟', title:'Friday!', msg:'Front-load everything — evening is free!' },
+  ],
+};
+const NOTIF_UNIVERSAL = [
+  { time:'20:30', ico:'🌙', title:'Wind down', msg:'Wind down reminder — get ready for bed.' },
+  { time:'21:00', ico:'📺', title:'Anime time', msg:'Phones across the room. Anime time.' },
+];
+
+let notifsEnabled = false;
+let notifInterval = null;
+let firedToday = {}; // key: "HH:MM" → true
+
+function initNotifs() {
+  const fired = localStorage.getItem(`bp_notif_fired_${todayKey}`);
+  firedToday = fired ? JSON.parse(fired) : {};
+  db.ref(`/users/${user}/settings/notificationsEnabled`).once('value', snap => {
+    notifsEnabled = !!snap.val();
+    updateBellUI();
+    if (notifsEnabled) startNotifInterval();
+  });
+}
+
+function startNotifInterval() {
+  if (notifInterval) clearInterval(notifInterval);
+  notifInterval = setInterval(checkNotifs, 60000);
+  checkNotifs(); // check immediately on enable
+}
+
+function stopNotifInterval() {
+  if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
+}
+
+function checkNotifs() {
+  if (!notifsEnabled || !user) return;
+  const now = new Date();
+  const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const schedule = [...(NOTIF_SCHEDULE[dayType] || []), ...NOTIF_UNIVERSAL];
+  for (const n of schedule) {
+    if (n.time === hhmm && !firedToday[hhmm]) {
+      firedToday[hhmm] = true;
+      localStorage.setItem(`bp_notif_fired_${todayKey}`, JSON.stringify(firedToday));
+      showToast(n.ico, n.title, n.msg);
+      break;
+    }
+  }
+}
+
+function showToast(ico, title, msg) {
+  document.getElementById('toastIco').textContent = ico;
+  document.getElementById('toastTitle').textContent = title;
+  document.getElementById('toastMsg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(hideToast, 5000);
+}
+function hideToast() {
+  document.getElementById('toast').classList.remove('show');
+}
+
+function toggleNotifs() {
+  notifsEnabled = !notifsEnabled;
+  db.ref(`/users/${user}/settings/notificationsEnabled`).set(notifsEnabled);
+  updateBellUI();
+  if (notifsEnabled) startNotifInterval();
+  else stopNotifInterval();
+  renderNotifList();
+}
+
+function updateBellUI() {
+  const sw = document.getElementById('notifToggleSw');
+  const lbl = document.getElementById('notifToggleLabel');
+  const dot = document.getElementById('bellDot');
+  if (sw) sw.classList.toggle('on', notifsEnabled);
+  if (lbl) lbl.textContent = notifsEnabled ? 'On' : 'Off';
+  if (dot) dot.classList.toggle('on', notifsEnabled);
+}
+
+function openNotifPanel() {
+  renderNotifList();
+  document.getElementById('notifPanel').classList.add('on');
+}
+function closeNotifPanel() {
+  document.getElementById('notifPanel').classList.remove('on');
+}
+
+function renderNotifList() {
+  updateBellUI();
+  const schedule = [...(NOTIF_SCHEDULE[dayType] || []), ...NOTIF_UNIVERSAL];
+  document.getElementById('notifList').innerHTML = schedule.map(n => `
+    <div class="notif-time-row">
+      <div class="notif-time">${n.ico} ${n.time}</div>
+      <div class="notif-desc">${n.msg}</div>
+    </div>`).join('');
+}
+
 // ── Init ──
 initTheme();
 const savedUser = localStorage.getItem('bp_user');
@@ -1234,6 +1443,7 @@ if (savedUser) {
   updateChip();
   attachFirebase();
   loadStreaks();
+  initNotifs();
   renderPlans();
   renderRules();
 }
