@@ -317,12 +317,74 @@ body {
 }
 .sh-name { font-size: 15px; font-weight: 600; color: var(--text); }
 
+/* ── Quick Pick ── */
+.qp-overlay {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  align-items: flex-end;
+}
+.qp-overlay.on { display: flex; }
+.qp-sheet {
+  background: var(--bg2); border-radius: 28px 28px 0 0;
+  padding: 24px 20px calc(env(safe-area-inset-bottom) + 28px);
+  width: 100%; max-width: 430px; margin: 0 auto;
+  max-height: 92vh; overflow-y: auto;
+}
+.qp-eyebrow { font-size: 12px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 5px; }
+.qp-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 18px; }
+.qp-cards { display: flex; flex-direction: column; gap: 9px; }
+.qp-card {
+  background: var(--bg3); border-radius: 14px;
+  border: 2px solid transparent; padding: 14px 16px;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.qp-card:active { transform: scale(0.98); }
+.qp-card.hi { border-color: var(--accent); background: var(--bg2);
+  box-shadow: 0 0 0 4px rgba(88,86,214,0.08); }
+.qp-card-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.qp-card-desc { font-size: 12px; color: var(--text2); }
+.qp-wake { font-size: 11px; font-weight: 600; color: var(--accent);
+  background: rgba(88,86,214,0.1); padding: 3px 9px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+.qp-weekend { text-align: center; padding: 10px 0 4px; }
+.qp-wknd-ico { font-size: 52px; margin-bottom: 14px; }
+.qp-wknd-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.qp-wknd-desc { font-size: 15px; color: var(--text2); line-height: 1.65; margin-bottom: 24px; }
+.qp-btn {
+  width: 100%; padding: 15px; border-radius: 14px;
+  background: var(--accent); color: #fff; border: none;
+  font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit;
+  transition: opacity 0.15s;
+}
+.qp-btn:active { opacity: 0.82; }
+.qp-sr-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.qp-sr-sub { font-size: 13px; color: var(--text2); margin-bottom: 18px; line-height: 1.55; }
+.qp-sr-row {
+  background: var(--bg3); border-radius: 12px; padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.qp-sr-day { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.qp-sr-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.qp-sr-opt {
+  padding: 5px 12px; border-radius: 99px; font-size: 12px; font-weight: 500;
+  border: 1.5px solid var(--border); background: var(--bg2); color: var(--text2);
+  cursor: pointer; transition: all 0.15s;
+}
+.qp-sr-opt.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+
 /* ── Anim ── */
 @keyframes fadeUp {
   from { opacity:0; transform:translateY(8px); }
   to   { opacity:1; transform:translateY(0); }
 }
 .fu { animation: fadeUp 0.28s ease both; }
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.slide-up { animation: slideUp 0.32s cubic-bezier(0.32,0.72,0,1) both; }
 </style>
 </head>
 <body>
@@ -429,6 +491,11 @@ body {
       </div>
     </div>
   </div>
+</div>
+
+<!-- ── Quick Pick Sheet ── -->
+<div class="qp-overlay" id="qpOverlay">
+  <div class="qp-sheet slide-up" id="qpSheet"></div>
 </div>
 
 <script>
@@ -576,6 +643,8 @@ let chartInst = null;
 let range = '1W';
 let todayKey = new Date().toISOString().split('T')[0];
 let fbOff = null;
+let qpShown = false;      // guard so Quick Pick only shows once per session
+let weekPlan = {};        // Sunday Reset plan
 
 // ── Theme ──
 function initTheme() {
@@ -597,6 +666,7 @@ function toggleTheme() {
 function selectUser(u) {
   user = u;
   localStorage.setItem('bp_user', u);
+  qpShown = false; // reset so Quick Pick can show for new user selection
   document.getElementById('overlay').classList.remove('on');
   document.getElementById('welcome').style.display = 'none';
   document.getElementById('app').classList.add('on');
@@ -637,17 +707,143 @@ function refToday(u) { return db.ref(`/users/${u}/checkins/${todayKey}`); }
 
 function attachFirebase() {
   if (fbOff) fbOff();
+  // Load week plan for Sunday Reset
+  db.ref(`/users/${user}/weekPlan`).once('value', snap => {
+    weekPlan = snap.val() || {};
+  });
   refToday(user).on('value', snap => {
     const d = snap.val();
     if (d) {
       if (d.dayType) dayType = d.dayType;
       checks = d.tasks ? {...d.tasks} : {};
+      renderToday();
     } else {
+      // No data saved for today — show Quick Pick on first load
       checks = {};
+      renderToday();
+      if (!qpShown) {
+        qpShown = true;
+        showQuickPick();
+      }
     }
-    renderToday();
   });
   fbOff = () => refToday(user).off();
+}
+
+// ── Quick Pick ──
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function isFriday()         { return new Date().getDay() === 5; }
+function isSaturday()       { return new Date().getDay() === 6; }
+function isSunday()         { return new Date().getDay() === 0; }
+function isSundayEvening()  { return isSunday() && new Date().getHours() >= 18; }
+function isWeekend()        { return isSaturday() || isSunday(); }
+
+function showQuickPick() {
+  const name = user === 'george' ? 'George' : 'Olivia';
+  const sheet = document.getElementById('qpSheet');
+  const overlay = document.getElementById('qpOverlay');
+
+  if (isSundayEvening()) {
+    sheet.innerHTML = buildSundayReset();
+  } else if (isWeekend()) {
+    sheet.innerHTML = buildWeekendMsg(name);
+  } else {
+    sheet.innerHTML = buildDayPicker(name);
+  }
+  overlay.classList.add('on');
+}
+
+function buildDayPicker(name) {
+  const QP_CARDS = [
+    { key:'earlyNormal', label:'Early Day',         desc:'Gym + career growth morning · George cooks',  wake:'Wake 6 AM' },
+    { key:'earlyClimb',  label:'Early + Climb/Dance',desc:'No gym · Deep career block · Activity tonight', wake:'Wake 6 AM' },
+    { key:'lateNormal',  label:'Late Day',           desc:'Nothing before work · Everything tonight',   wake:'Wake 8 AM' },
+    { key:'lateClimb',   label:'Late + Climb/Dance', desc:'Nothing before work · Activity tonight',     wake:'Wake 8 AM' },
+    { key:'friday',      label:'Friday',             desc:'Front-load gym + career · Free evening',     wake:'Wake 6 AM' },
+  ];
+  const friday = isFriday();
+  return `
+    <div class="qp-eyebrow">${greeting()}, ${name}</div>
+    <div class="qp-title">What type of day is today?</div>
+    <div class="qp-cards">
+      ${QP_CARDS.map(c => `
+        <div class="qp-card ${(c.key === 'friday' && friday) ? 'hi' : ''}"
+             onclick="pickFromQP('${c.key}')">
+          <div>
+            <div class="qp-card-name">${c.label}${c.key==='friday'&&friday?' ⭐':''}</div>
+            <div class="qp-card-desc">${c.desc}</div>
+          </div>
+          <div class="qp-wake">${c.wake}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function buildWeekendMsg(name) {
+  return `
+    <div class="qp-weekend">
+      <div class="qp-wknd-ico">🌤️</div>
+      <div class="qp-wknd-title">It's the weekend!</div>
+      <div class="qp-wknd-desc">No set schedule today, ${name}. Enjoy your day.<br><br>
+        Remember the body clock rules:<br>
+        Bed by 1:30 AM · Up by 10 AM<br>
+        Sunday night: back to weekday schedule.</div>
+      <button class="qp-btn" onclick="closeQP()">Got it 👍</button>
+    </div>`;
+}
+
+function buildSundayReset() {
+  const days = ['Monday','Tuesday','Wednesday','Thursday'];
+  const isGeorge = user === 'george';
+  const opts = isGeorge
+    ? ['Regular','Climbing']
+    : ['Regular','Dance'];
+  return `
+    <div class="qp-sr-title">Sunday Reset 🔄</div>
+    <div class="qp-sr-sub">Plan your week! Which days will be ${isGeorge ? 'climbing' : 'dance'} days?</div>
+    <div id="srDays">
+      ${days.map(day => `
+        <div class="qp-sr-row">
+          <div class="qp-sr-day">${day}</div>
+          <div class="qp-sr-opts">
+            ${opts.map(opt => `
+              <div class="qp-sr-opt ${(weekPlan[day.toLowerCase()]||'regular') === opt.toLowerCase() ? 'on' : ''}"
+                   onclick="setSRDay('${day.toLowerCase()}','${opt.toLowerCase()}',this)">
+                ${opt}
+              </div>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>
+    <button class="qp-btn" style="margin-top:12px" onclick="saveSundayReset()">Save Week Plan</button>`;
+}
+
+function setSRDay(day, val, el) {
+  weekPlan[day] = val;
+  el.closest('.qp-sr-opts').querySelectorAll('.qp-sr-opt').forEach(o => o.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function saveSundayReset() {
+  db.ref(`/users/${user}/weekPlan`).set(weekPlan);
+  closeQP();
+}
+
+function pickFromQP(key) {
+  dayType = key;
+  checks = {};
+  expanded = {};
+  closeQP();
+  save();
+  renderToday();
+}
+
+function closeQP() {
+  document.getElementById('qpOverlay').classList.remove('on');
 }
 
 function save() {
