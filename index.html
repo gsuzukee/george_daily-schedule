@@ -1886,17 +1886,27 @@ function shuffleYutaQuote() {
 function playTickSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc  = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
-    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.18);
-    setTimeout(() => ctx.close(), 400);
+    // Impact thud — low frequency burst
+    const thud = ctx.createOscillator();
+    const thudGain = ctx.createGain();
+    thud.connect(thudGain); thudGain.connect(ctx.destination);
+    thud.type = 'sawtooth';
+    thud.frequency.setValueAtTime(80, ctx.currentTime);
+    thud.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.12);
+    thudGain.gain.setValueAtTime(0.22, ctx.currentTime);
+    thudGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    thud.start(ctx.currentTime); thud.stop(ctx.currentTime + 0.15);
+    // Electric crackle — noise-like high burst
+    const crk = ctx.createOscillator();
+    const crkGain = ctx.createGain();
+    crk.connect(crkGain); crkGain.connect(ctx.destination);
+    crk.type = 'square';
+    crk.frequency.setValueAtTime(2200, ctx.currentTime);
+    crk.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.08);
+    crkGain.gain.setValueAtTime(0.08, ctx.currentTime);
+    crkGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    crk.start(ctx.currentTime); crk.stop(ctx.currentTime + 0.08);
+    setTimeout(() => ctx.close(), 500);
   } catch(e) {}
 }
 
@@ -1912,46 +1922,134 @@ function triggerBlackFlash(originEl) {
   canvas.style.display = 'block';
 
   const c2d = canvas.getContext('2d');
-  const sparks = Array.from({ length: 14 }, () => {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 3.5 + Math.random() * 4.5;
-    const color = Math.random() < 0.55 ? '#dc2626' : '#f59e0b';
-    const len   = 12 + Math.random() * 18;
-    return { angle, speed, color, len, x: cx, y: cy, life: 1 };
+
+  // ── Recursive midpoint displacement for jagged natural lightning ──
+  function boltPoints(x1, y1, x2, y2, spread, depth) {
+    if (depth === 0) return [[x1, y1], [x2, y2]];
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const offset = (Math.random() - 0.5) * len * spread;
+    const px = mx + (-dy / len) * offset;
+    const py = my + ( dx / len) * offset;
+    const left  = boltPoints(x1, y1, px, py, spread * 0.72, depth - 1);
+    const right = boltPoints(px, py, x2, y2, spread * 0.72, depth - 1);
+    right.shift();
+    return [...left, ...right];
+  }
+
+  // Draw a bolt with layered glow: black shadow → red outer → white core
+  function drawBolt(pts, baseWidth, alpha) {
+    if (pts.length < 2) return;
+    // Black shadow (crack effect)
+    c2d.beginPath();
+    c2d.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) c2d.lineTo(pts[i][0], pts[i][1]);
+    c2d.strokeStyle = 'rgba(0,0,0,0.9)';
+    c2d.globalAlpha = alpha * 0.6;
+    c2d.lineWidth = baseWidth * 3.5;
+    c2d.lineCap = 'round'; c2d.lineJoin = 'round';
+    c2d.stroke();
+    // Red outer glow
+    c2d.beginPath();
+    c2d.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) c2d.lineTo(pts[i][0], pts[i][1]);
+    c2d.strokeStyle = '#cc0000';
+    c2d.globalAlpha = alpha * 0.85;
+    c2d.lineWidth = baseWidth * 2;
+    c2d.stroke();
+    // Bright white core
+    c2d.beginPath();
+    c2d.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) c2d.lineTo(pts[i][0], pts[i][1]);
+    c2d.strokeStyle = '#ffffff';
+    c2d.globalAlpha = alpha;
+    c2d.lineWidth = baseWidth * 0.6;
+    c2d.stroke();
+    c2d.globalAlpha = 1;
+  }
+
+  // Build bolt tree: main bolt + branches off random segments
+  function makeBoltTree(angle, length) {
+    const ex = cx + Math.cos(angle) * length;
+    const ey = cy + Math.sin(angle) * length;
+    const main = boltPoints(cx, cy, ex, ey, 0.75, 7);
+    const branches = [];
+    const numBr = 2 + Math.floor(Math.random() * 3);
+    for (let b = 0; b < numBr; b++) {
+      const seg = Math.floor(main.length * (0.15 + Math.random() * 0.55));
+      const bx = main[seg][0];
+      const by = main[seg][1];
+      const brAngle = angle + (Math.random() - 0.5) * 1.4;
+      const brLen   = length * (0.25 + Math.random() * 0.4);
+      const bex = bx + Math.cos(brAngle) * brLen;
+      const bey = by + Math.sin(brAngle) * brLen;
+      branches.push(boltPoints(bx, by, bex, bey, 0.7, 5));
+    }
+    return { main, branches };
+  }
+
+  // 10-13 bolts radiating in all directions
+  const maxR = Math.sqrt(canvas.width ** 2 + canvas.height ** 2) * 0.75;
+  const NUM_BOLTS = 10 + Math.floor(Math.random() * 4);
+  const bolts = Array.from({ length: NUM_BOLTS }, (_, i) => {
+    const angle = (i / NUM_BOLTS) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+    const len   = maxR * (0.55 + Math.random() * 0.45);
+    return makeBoltTree(angle, len);
   });
 
   let frame = 0;
-  const TOTAL = 26; // ~433ms @ 60fps
+  const TOTAL = 42; // ~700ms @ 60fps
 
   function draw() {
     c2d.clearRect(0, 0, canvas.width, canvas.height);
     const t = frame / TOTAL;
 
-    // White circle flash in first 20% of animation
-    if (t < 0.20) {
-      const flashAlpha = (0.20 - t) / 0.20 * 0.85;
-      const flashR = 28 * (t / 0.20);
-      c2d.beginPath();
-      c2d.arc(cx, cy, flashR, 0, Math.PI * 2);
-      c2d.fillStyle = `rgba(255,255,255,${flashAlpha})`;
-      c2d.fill();
+    // ── Phase 1 (t < 0.08): Full white flash ──
+    if (t < 0.08) {
+      const a = (0.08 - t) / 0.08;
+      c2d.fillStyle = `rgba(255,255,255,${a * 0.95})`;
+      c2d.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Spark lines
-    sparks.forEach(s => {
-      s.x += Math.cos(s.angle) * s.speed;
-      s.y += Math.sin(s.angle) * s.speed;
-      s.life = Math.max(0, 1 - t * 1.4);
+    // ── Phase 1-2 (t < 0.25): Red screen tint ──
+    if (t < 0.25) {
+      const a = Math.max(0, (0.25 - t) / 0.25) * 0.55;
+      c2d.fillStyle = `rgba(160,0,0,${a})`;
+      c2d.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // ── Lightning bolts (t 0.04 → 1.0, flicker) ──
+    if (t > 0.04) {
+      const flicker = (frame % 4 !== 2) || t > 0.55;
+      if (flicker) {
+        const fade = Math.pow(1 - t, 1.4);
+        bolts.forEach((bolt, bi) => {
+          const delay = (bi / NUM_BOLTS) * 0.08;
+          if (t < delay) return;
+          const a = fade * (0.75 + Math.random() * 0.25);
+          drawBolt(bolt.main, 3.5, a);
+          bolt.branches.forEach(br => drawBolt(br, 2, a * 0.8));
+        });
+      }
+    }
+
+    // ── Center radial burst ──
+    if (t < 0.35) {
+      const burstAlpha = (0.35 - t) / 0.35;
+      const burstR = 90 * (t / 0.35);
+      const g = c2d.createRadialGradient(cx, cy, 0, cx, cy, burstR);
+      g.addColorStop(0,   `rgba(255,255,255,${burstAlpha})`);
+      g.addColorStop(0.3, `rgba(220,0,0,${burstAlpha * 0.9})`);
+      g.addColorStop(0.7, `rgba(80,0,0,${burstAlpha * 0.4})`);
+      g.addColorStop(1,   'rgba(0,0,0,0)');
+      c2d.fillStyle = g;
       c2d.beginPath();
-      c2d.moveTo(s.x, s.y);
-      c2d.lineTo(s.x - Math.cos(s.angle) * s.len, s.y - Math.sin(s.angle) * s.len);
-      c2d.strokeStyle = s.color;
-      c2d.globalAlpha = s.life;
-      c2d.lineWidth = 2.2;
-      c2d.lineCap = 'round';
-      c2d.stroke();
-      c2d.globalAlpha = 1;
-    });
+      c2d.arc(cx, cy, burstR, 0, Math.PI * 2);
+      c2d.fill();
+    }
 
     frame++;
     if (frame < TOTAL) {
