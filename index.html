@@ -1604,20 +1604,13 @@ function attachFirebase() {
 // ── Streaks ──
 let streakCache = { george: null, olivia: null };
 
-function isWeekday(dateStr) {
+function prevDay(dateStr) {
   const d = new Date(dateStr + 'T12:00:00');
-  const day = d.getDay();
-  return day >= 1 && day <= 5; // Mon–Fri
-}
-
-function prevWeekday(dateStr) {
-  const d = new Date(dateStr + 'T12:00:00');
-  do { d.setDate(d.getDate() - 1); } while (d.getDay() === 0 || d.getDay() === 6);
+  d.setDate(d.getDate() - 1);
   return d.toISOString().split('T')[0];
 }
 
 async function updateStreak(u) {
-  if (!isWeekday(todayKey)) return; // weekends don't affect streaks
   const checkinSnap = await db.ref(`/users/${u}/checkins/${todayKey}`).once('value');
   const pct = checkinSnap.val()?.percentage ?? 0;
   if (pct < 100) return; // only count fully completed days
@@ -1627,8 +1620,8 @@ async function updateStreak(u) {
 
   if (lastCompletedDate === todayKey) return; // already recorded today
 
-  const expectedPrev = prevWeekday(todayKey);
-  if (lastCompletedDate === expectedPrev) {
+  // Streak continues if yesterday was the last completed date
+  if (lastCompletedDate === prevDay(todayKey)) {
     current += 1;
   } else {
     current = 1; // streak broken or first ever
