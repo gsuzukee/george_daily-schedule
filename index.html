@@ -23,6 +23,7 @@
   --shadow:  0 1px 4px rgba(0,0,0,0.07);
   --r:       14px;
   --tab-h:   80px;
+  --active-stance-color: #5856D6;
 }
 
 [data-theme="dark"] {
@@ -241,7 +242,7 @@ body {
   background: var(--bg2); color: var(--text2);
   transition: all 0.18s; white-space: nowrap;
 }
-.d-pill.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.d-pill.on { background: var(--active-stance-color); color: #fff; border-color: var(--active-stance-color); }
 
 .prog-card {
   background: var(--bg2); border-radius: var(--r);
@@ -256,7 +257,7 @@ body {
 .prog-num { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
 .prog-card.done .prog-num { color: #fff; }
 .prog-track { height: 3px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
-.prog-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.35s ease; }
+.prog-fill { height: 100%; border-radius: 99px; background: var(--active-stance-color); transition: width 0.35s ease; }
 .prog-card.done .prog-fill { background: rgba(255,255,255,0.45); }
 
 /* ── Timeline ── */
@@ -713,6 +714,89 @@ body > *:not(#particles) { position:relative; z-index:1; }
 }
 .qp-sr-opt.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 
+/* ── Feature 3: Stance Subtitles ── */
+.qp-card-stance { font-size: 11px; color: var(--text2); font-style: italic; margin-top: 2px; }
+.plan-stance { font-size: 10px; font-weight: 600; letter-spacing: 0.4px;
+  text-transform: uppercase; margin-top: 2px; opacity: 0.8; }
+
+/* ── Feature 2: Sorcerer Grade ── */
+.grade-section { margin-bottom: 14px; }
+.grade-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grade-card {
+  background: var(--bg2); border-radius: var(--r);
+  border: 1.5px solid var(--border); padding: 13px 14px;
+  box-shadow: var(--shadow);
+}
+.grade-user-name { font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; margin-bottom: 7px; }
+.grade-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 12px; font-weight: 700; margin-bottom: 9px;
+  border: 1px solid transparent;
+}
+.grade-badge.grade-4 { background: rgba(134,134,139,0.12); color: #86868B; border-color: rgba(134,134,139,0.25); }
+.grade-badge.grade-3 { background: rgba(48,176,199,0.12);  color: #30B0C7; border-color: rgba(48,176,199,0.3); }
+.grade-badge.grade-2 { background: rgba(0,122,255,0.12);   color: #007AFF; border-color: rgba(0,122,255,0.3); }
+.grade-badge.grade-1 { background: rgba(88,86,214,0.12);   color: #5856D6; border-color: rgba(88,86,214,0.35); animation: gradeGlow 2.5s ease infinite; }
+.grade-badge.special  { background: rgba(255,179,64,0.12);  color: #FFB340; border-color: rgba(255,179,64,0.35); animation: gradeGlowGold 2s ease infinite; }
+@keyframes gradeGlow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(88,86,214,0); }
+  50%      { box-shadow: 0 0 8px 2px rgba(88,86,214,0.22); }
+}
+@keyframes gradeGlowGold {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,179,64,0); }
+  50%      { box-shadow: 0 0 8px 2px rgba(255,179,64,0.28); }
+}
+.grade-prog-label { font-size: 10px; color: var(--text2); margin-bottom: 4px; }
+.grade-prog-track { height: 3px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+.grade-prog-fill  { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+
+/* ── Feature 1: Rika Suggestion ── */
+.rika-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text2); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 5px;
+}
+.rika-suggest-card {
+  background: var(--bg3); border-radius: 16px;
+  border: 2px solid var(--active-stance-color); padding: 18px 16px 15px;
+  margin-bottom: 14px;
+}
+.rika-card-stance { font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.8px; margin-bottom: 5px; }
+.rika-card-name { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.rika-card-desc { font-size: 12px; color: var(--text2); margin-bottom: 10px; line-height: 1.4; }
+.rika-card-wake {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  padding: 3px 9px; border-radius: 99px;
+  background: rgba(88,86,214,0.1); color: var(--active-stance-color);
+}
+.rika-confirm {
+  width: 100%; padding: 15px; border-radius: 14px; border: none;
+  background: var(--active-stance-color); color: #fff;
+  font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit;
+  margin-bottom: 10px; transition: opacity 0.15s;
+  animation: cursedPulse 2.2s ease infinite;
+}
+.rika-confirm:active { opacity: 0.82; }
+@keyframes cursedPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(88,86,214,0.45), 0 4px 14px rgba(88,86,214,0.15); }
+  50%      { box-shadow: 0 0 0 7px rgba(88,86,214,0), 0 4px 18px rgba(88,86,214,0.3); }
+}
+.rika-showall {
+  width: 100%; padding: 11px; background: none;
+  border: 1px solid var(--border); border-radius: 14px;
+  color: var(--text2); font-size: 14px; font-weight: 500;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.rika-showall:active { opacity: 0.7; }
+.rika-observe {
+  font-size: 12px; color: var(--text2); font-style: italic;
+  background: rgba(88,86,214,0.06); border-radius: 10px;
+  padding: 8px 12px; margin-bottom: 12px; text-align: center;
+}
+
 /* ── Anim ── */
 @keyframes fadeUp {
   from { opacity:0; transform:translateY(8px); }
@@ -818,6 +902,7 @@ body > *:not(#particles) { position:relative; z-index:1; }
     </div>
 
     <div class="tab-panel" id="p-progress">
+      <div id="gradeSection" class="grade-section"></div>
       <div id="streakRowProgress"></div>
       <div class="rng-sel" id="rngSel"></div>
       <div class="chart-card">
@@ -991,6 +1076,15 @@ const PLAN_INFO = {
   lateNormal:  { wake:'8:00 AM', sleep:'~10:30–10:45 PM', desc:'Nothing before work. Gym after work. George cooks. Career growth, journal, guitar, anime.' },
   lateClimb:   { wake:'8:00 AM', sleep:'~10:45–11:00 PM', desc:'Nothing before work. Activity after work. Ordered food. Career, journal, guitar, anime.' },
   friday:      { wake:'6:00 AM', sleep:'Cap 1:30 AM',     desc:'Always early. Front-load gym + career growth. Evening 100% free.' },
+};
+
+// ── Feature 3: Stance Data ──
+const STANCE_DATA = {
+  earlyNormal: { stanceName: 'Technique: Full Output',      accentColor: '#007AFF' },
+  earlyClimb:  { stanceName: 'Technique: Divergent Fist',   accentColor: '#5856D6' },
+  lateNormal:  { stanceName: 'Technique: Convergence',      accentColor: '#30B0C7' },
+  lateClimb:   { stanceName: 'Technique: Flowing Edge',     accentColor: '#FF9500' },
+  friday:      { stanceName: 'Technique: Domain Expansion', accentColor: '#FFB340' },
 };
 
 const S = {
@@ -1405,7 +1499,7 @@ function attachFirebase() {
   refToday(user).on('value', snap => {
     const d = snap.val();
     if (d) {
-      if (d.dayType) dayType = d.dayType;
+      if (d.dayType) { dayType = d.dayType; applyStanceColor(dayType); }
       checks = d.tasks ? {...d.tasks} : {};
       renderToday();
     } else {
@@ -1539,7 +1633,7 @@ function showQuickPick() {
   } else if (isWeekend()) {
     sheet.innerHTML = buildWeekendMsg(name);
   } else {
-    sheet.innerHTML = buildDayPicker(name);
+    sheet.innerHTML = buildDayPickerRika(name);
   }
   overlay.classList.add('on');
 }
@@ -1619,6 +1713,15 @@ function saveSundayReset() {
 }
 
 function pickFromQP(key) {
+  // Save Rika history (wasOverride if user picked something different from suggestion)
+  if (!_rikaEntrySaved) {
+    const wasOverride = _rikaSuggestion !== null && key !== _rikaSuggestion;
+    saveRikaEntry(user, key, wasOverride);
+  }
+  _rikaSuggestion = null;
+  _rikaShowingAll = false;
+  _rikaEntrySaved = false;
+  applyStanceColor(key);
   dayType = key;
   checks = {};
   expanded = {};
@@ -1656,6 +1759,8 @@ function renderToday() {
 }
 
 function pickDay(key) {
+  applyStanceColor(key);
+  saveRikaEntry(user, key, false);
   dayType = key;
   checks = {};
   expanded = {};
@@ -1742,6 +1847,11 @@ async function loadChartData() {
   drawChart(labels, gPts, oPts);
   renderStats(gd, od);
   renderDayTypes(gd, od);
+  // Feature 2: compute sorcerer grades from loaded checkin data
+  const gStreak = sorcererStreakFromData(gd), oStreak = sorcererStreakFromData(od);
+  sorcererCache.george = { streak: gStreak, grade: gradeFromStreak(gStreak) };
+  sorcererCache.olivia = { streak: oStreak, grade: gradeFromStreak(oStreak) };
+  renderSorcererGrades();
 }
 
 function drawChart(labels, gPts, oPts) {
@@ -1842,6 +1952,7 @@ function renderPlans() {
         <div class="plan-hdr">
           <div>
             <div class="plan-ttl">${dt.label}</div>
+            <div class="plan-stance" style="color:${STANCE_DATA[dt.key].accentColor}">${STANCE_DATA[dt.key].stanceName}</div>
             <div class="plan-times">Wake ${info.wake} · Sleep ${info.sleep}</div>
           </div>
           <span class="plan-chev">▼</span>
@@ -1890,6 +2001,179 @@ function renderRules() {
         <div class="dec-q">${d.l}</div>
         <div class="dec-a">${d.v}</div>
       </div>`).join('')}`;
+}
+
+// ── Feature 3: Stance Color ──
+function applyStanceColor(key) {
+  const stance = STANCE_DATA[key];
+  if (!stance) return;
+  document.documentElement.style.setProperty('--active-stance-color', stance.accentColor);
+}
+
+// ── Feature 2: Sorcerer Grade ──
+const GRADE_TIERS = [
+  { min:30, label:'Special Grade', color:'#FFB340', cls:'special', icon:'⭐', nextLabel:null,           nextAt:null },
+  { min:14, label:'Grade 1',       color:'#5856D6', cls:'grade-1', icon:'◈', nextLabel:'Special Grade', nextAt:30 },
+  { min:7,  label:'Grade 2',       color:'#007AFF', cls:'grade-2', icon:'◈', nextLabel:'Grade 1',       nextAt:14 },
+  { min:3,  label:'Grade 3',       color:'#30B0C7', cls:'grade-3', icon:'◈', nextLabel:'Grade 2',       nextAt:7  },
+  { min:0,  label:'Grade 4',       color:'#86868B', cls:'grade-4', icon:'◈', nextLabel:'Grade 3',       nextAt:3  },
+];
+
+function gradeFromStreak(streak) {
+  return GRADE_TIERS.find(g => streak >= g.min) || GRADE_TIERS[GRADE_TIERS.length - 1];
+}
+
+function sorcererStreakFromData(data) {
+  // Count consecutive days with ≥70% completion ending at most yesterday
+  const entries = Object.entries(data)
+    .filter(([k]) => k < todayKey)
+    .sort((a, b) => (a[0] < b[0] ? 1 : -1)); // newest-first
+  let streak = 0;
+  for (const [, v] of entries) {
+    if ((v?.percentage ?? 0) >= 70) streak++;
+    else break;
+  }
+  return streak;
+}
+
+let sorcererCache = { george: null, olivia: null };
+
+function renderSorcererGrades() {
+  const el = document.getElementById('gradeSection');
+  if (!el) return;
+  const g = sorcererCache.george, o = sorcererCache.olivia;
+  if (!g && !o) { el.innerHTML = ''; return; }
+
+  function cardHTML(name, color, data) {
+    if (!data) return '';
+    const { streak, grade } = data;
+    const pct = grade.nextAt ? Math.min(100, Math.round((streak / grade.nextAt) * 100)) : 100;
+    const label = grade.nextAt
+      ? `${streak} / ${grade.nextAt} days → ${grade.nextLabel}`
+      : `${streak} days — Peak sorcerer`;
+    return `
+      <div class="grade-card">
+        <div class="grade-user-name" style="color:${color}">${name}</div>
+        <div class="grade-badge ${grade.cls}">${grade.icon} ${grade.label}</div>
+        <div class="grade-prog-label">${label}</div>
+        <div class="grade-prog-track">
+          <div class="grade-prog-fill" style="width:${pct}%;background:${grade.color}"></div>
+        </div>
+      </div>`;
+  }
+
+  el.innerHTML = `<div class="grade-row">
+    ${cardHTML('George', '#007AFF', g)}
+    ${cardHTML('Olivia', '#FF6B9D', o)}
+  </div>`;
+}
+
+// ── Feature 1: Rika's Suggestion ──
+const RIKA_KEY = u => `dailyBlueprint_dayTypeHistory_${u}`;
+
+function getRikaHistory(u) {
+  try { return JSON.parse(localStorage.getItem(RIKA_KEY(u))) || []; }
+  catch(e) { return []; }
+}
+
+function saveRikaEntry(u, selectedType, wasOverride) {
+  const hist = getRikaHistory(u);
+  hist.push({ userId:u, date:todayKey, dayOfWeek:new Date().getDay(), selectedType, wasOverride });
+  localStorage.setItem(RIKA_KEY(u), JSON.stringify(hist.slice(-120)));
+}
+
+function getRikaSuggestion(u) {
+  const hist = getRikaHistory(u);
+  const dow = new Date().getDay();
+  const same = hist.filter(h => h.dayOfWeek === dow);
+  if (same.length < 3) return null;
+
+  // Check for 3+ consistent overrides to the same alternative type
+  const overrides = same.filter(h => h.wasOverride);
+  const ovFreq = {};
+  overrides.forEach(h => { ovFreq[h.selectedType] = (ovFreq[h.selectedType] || 0) + 1; });
+  const ovWinner = Object.entries(ovFreq).find(([, v]) => v >= 3);
+  if (ovWinner) return ovWinner[0];
+
+  // Suggest most frequent pick for this day of week
+  const freq = {};
+  same.forEach(h => { freq[h.selectedType] = (freq[h.selectedType] || 0) + 1; });
+  return Object.entries(freq).sort((a,b) => b[1]-a[1])[0][0];
+}
+
+const QP_CARDS_DATA = [
+  { key:'earlyNormal', label:'Early Day',          desc:'Gym + career growth morning · George cooks',   wake:'Wake 6 AM' },
+  { key:'earlyClimb',  label:'Early + Climb/Dance', desc:'No gym · Deep career block · Activity tonight', wake:'Wake 6 AM' },
+  { key:'lateNormal',  label:'Late Day',            desc:'Nothing before work · Everything tonight',    wake:'Wake 8 AM' },
+  { key:'lateClimb',   label:'Late + Climb/Dance',  desc:'Nothing before work · Activity tonight',      wake:'Wake 8 AM' },
+  { key:'friday',      label:'Friday',              desc:'Front-load gym + career · Free evening',      wake:'Wake 6 AM' },
+];
+
+let _rikaSuggestion = null;    // what Rika suggested this session
+let _rikaShowingAll = false;   // user tapped "show all"
+let _rikaEntrySaved = false;   // history entry already saved this session
+
+function buildDayPickerRika(name) {
+  const friday = isFriday();
+  _rikaSuggestion = friday ? 'friday' : getRikaSuggestion(user);
+  _rikaShowingAll = false;
+  _rikaEntrySaved = false;
+
+  if (_rikaSuggestion && !_rikaShowingAll) {
+    const c = QP_CARDS_DATA.find(x => x.key === _rikaSuggestion);
+    const stance = STANCE_DATA[_rikaSuggestion];
+    return `
+      <div class="qp-eyebrow">${greeting()}, ${name}</div>
+      <div class="rika-label">👁 Rika suggests</div>
+      <div class="rika-suggest-card" style="border-color:${stance.accentColor}">
+        <div class="rika-card-stance" style="color:${stance.accentColor}">${stance.stanceName}</div>
+        <div class="rika-card-name">${c.label}${_rikaSuggestion==='friday'&&friday?' ⭐':''}</div>
+        <div class="rika-card-desc">${c.desc}</div>
+        <div class="rika-card-wake" style="background:${stance.accentColor}22;color:${stance.accentColor}">${c.wake}</div>
+      </div>
+      <button class="rika-confirm" onclick="rikaConfirm('${_rikaSuggestion}')">✓ Confirm</button>
+      <button class="rika-showall" onclick="rikaRevealAll()">Show all day types</button>`;
+  }
+
+  const observeMsg = !_rikaSuggestion
+    ? `<div class="rika-observe">👁 Rika is observing your patterns...</div>`
+    : '';
+
+  return `
+    <div class="qp-eyebrow">${greeting()}, ${name}</div>
+    <div class="qp-title">What type of day is today?</div>
+    ${observeMsg}
+    <div class="qp-cards">
+      ${QP_CARDS_DATA.map(c => {
+        const stance = STANCE_DATA[c.key];
+        return `
+          <div class="qp-card ${c.key==='friday'&&friday?'hi':''}"
+               style="border-left:3px solid ${stance.accentColor}"
+               onclick="pickFromQP('${c.key}')">
+            <div>
+              <div class="qp-card-name">${c.label}${c.key==='friday'&&friday?' ⭐':''}</div>
+              <div class="qp-card-stance">${stance.stanceName}</div>
+              <div class="qp-card-desc">${c.desc}</div>
+            </div>
+            <div class="qp-wake">${c.wake}</div>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function rikaConfirm(key) {
+  saveRikaEntry(user, key, false);
+  _rikaEntrySaved = true;
+  _rikaSuggestion = null;
+  pickFromQP(key);
+}
+
+function rikaRevealAll() {
+  _rikaShowingAll = true;
+  const name = user === 'george' ? 'George' : 'Olivia';
+  document.getElementById('qpSheet').innerHTML = buildDayPickerRika(name);
+  // Restore rika suggestion reference so override can be detected
+  _rikaSuggestion = isFriday() ? 'friday' : getRikaSuggestion(user);
 }
 
 // ── Celebration ──
