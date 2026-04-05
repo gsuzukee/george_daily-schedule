@@ -263,21 +263,15 @@
         g.textAlign   = 'center';
         g.textBaseline = 'middle';
 
-        // Layer 1 — wide white glow halo (makes letters stand out)
+        // Step 1 — thick white stroke (creates the white border around each letter)
         g.shadowColor = '#ffffff';
-        g.shadowBlur  = 32;
+        g.shadowBlur  = 24;
         g.strokeStyle = '#ffffff';
-        g.lineWidth   = 6;
+        g.lineWidth   = 12;
+        g.lineJoin    = 'round';
         g.strokeText('黒閃', cx, textY);
 
-        // Layer 2 — red inner glow
-        g.shadowColor = '#ff0000';
-        g.shadowBlur  = 14;
-        g.strokeStyle = '#cc0000';
-        g.lineWidth   = 3;
-        g.strokeText('黒閃', cx, textY);
-
-        // Layer 3 — black fill (the actual letter colour)
+        // Step 2 — solid black fill painted on top (the letter itself is black)
         g.shadowBlur  = 0;
         g.fillStyle   = '#000000';
         g.fillText('黒閃', cx, textY);
