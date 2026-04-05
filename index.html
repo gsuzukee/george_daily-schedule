@@ -97,8 +97,8 @@ body {
 
 /* ── PIN Screen ── */
 #pinScreen {
-  display: none; position: fixed; inset: 0; z-index: 600;
-  background: var(--bg); flex-direction: column; align-items: center;
+  display: none; flex-direction: column; align-items: center;
+  min-height: 100vh; background: var(--bg);
   padding: max(env(safe-area-inset-top), 20px) 32px calc(env(safe-area-inset-bottom) + 20px);
 }
 #pinScreen.on { display: flex; }
@@ -388,10 +388,8 @@ body {
 /* ── Sheet ── */
 .overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.35); z-index: 400;
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.55); z-index: 400;
   align-items: flex-end;
-  transform: translateZ(0); -webkit-transform: translateZ(0);
 }
 .overlay.on { display: flex; }
 .sheet {
@@ -1482,8 +1480,13 @@ function openProfileSheet() {
   document.getElementById('profSheetName').textContent = user === 'george' ? 'George' : 'Olivia';
   document.getElementById('profSheetRole').textContent = user === 'george' ? 'Uber Eats AE' : 'Stripe SWE';
   document.getElementById('profileOverlay').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  window.scrollTo(0, 0);
 }
-function closeProfileSheet() { document.getElementById('profileOverlay').classList.remove('on'); }
+function closeProfileSheet() {
+  document.getElementById('profileOverlay').classList.remove('on');
+  document.body.style.overflow = '';
+}
 function maybeCloseProfileSheet(e) {
   if (e.target === document.getElementById('profileOverlay')) closeProfileSheet();
 }
