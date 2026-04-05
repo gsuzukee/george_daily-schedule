@@ -64,7 +64,7 @@
     const canvas = document.createElement('canvas');
     canvas.width  = W;
     canvas.height = H;
-    canvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:9995;';
+    canvas.style.cssText = `position:fixed;top:0;left:0;width:${W}px;height:${H}px;pointer-events:none;z-index:9995;`;
     document.body.appendChild(canvas);
     const g = canvas.getContext('2d');
 
@@ -256,12 +256,12 @@
         const scale  = ph < 0.12 ? 1 + (ph / 0.12) * 0.22 : 1.22 - (ph - 0.12) * 0.18;
         const fSize  = Math.round(Math.max(46, 52 * scale));
 
-        // Clamp text X so the kanji never goes off either edge of the screen.
-        // Estimated half-width of two CJK chars at this font size ≈ fSize * 1.1
-        const pad    = fSize * 1.15;
+        // Clamp text so it never bleeds off any edge.
+        // Half-extent = half-char-width (≈fSize) + stroke half (6) + shadowBlur (24) + margin (8)
+        const pad    = fSize + 38;
         const textX  = Math.min(Math.max(cx, pad), W - pad);
-        // Position above the tap point, but keep within top of screen
-        const textY  = Math.max(cy - 70, fSize * 0.8);
+        // Keep kanji above the tap point but not above the top safe area
+        const textY  = Math.max(cy - 70, pad);
 
         g.save();
         g.globalAlpha = alpha;
