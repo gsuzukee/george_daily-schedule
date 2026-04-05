@@ -388,9 +388,10 @@ body {
 /* ── Sheet ── */
 .overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.35); z-index: 200;
+  background: rgba(0,0,0,0.35); z-index: 400;
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   align-items: flex-end;
+  transform: translateZ(0); -webkit-transform: translateZ(0);
 }
 .overlay.on { display: flex; }
 .sheet {
@@ -483,21 +484,29 @@ body {
 
 /* ── Toast Notifications ── */
 .toast {
-  position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
+  display: none; position: fixed; top: 0; left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 430px; z-index: 500;
   padding: 14px 18px 14px 16px;
   background: var(--bg2); border-bottom: 1px solid var(--border);
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  display: flex; align-items: flex-start; gap: 10px;
-  transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+  align-items: flex-start; gap: 10px;
+  animation: toastSlideIn 0.35s cubic-bezier(0.32,0.72,0,1) both;
 }
-.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.show { display: flex; }
+@keyframes toastSlideIn {
+  from { transform: translateX(-50%) translateY(-100%); }
+  to   { transform: translateX(-50%) translateY(0); }
+}
 .toast-ico { font-size: 18px; flex-shrink: 0; padding-top: 1px; }
 .toast-body { flex: 1; }
 .toast-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
 .toast-msg { font-size: 13px; color: var(--text2); line-height: 1.4; }
-.toast-close { font-size: 16px; color: var(--text2); cursor: pointer; flex-shrink: 0;
-  padding: 0 2px; line-height: 1; align-self: flex-start; }
+.toast-close {
+  min-width: 44px; min-height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--text2); cursor: pointer;
+  margin: -14px -18px -14px 0;
+}
 
 /* ── Notif Settings Panel ── */
 .notif-panel {
@@ -1024,7 +1033,7 @@ body > *:not(#particles) { position:relative; z-index:1; }
     <div class="toast-title" id="toastTitle"></div>
     <div class="toast-msg" id="toastMsg"></div>
   </div>
-  <div class="toast-close" onclick="hideToast()">✕</div>
+  <div class="toast-close" onclick="dismissToast()">✕</div>
 </div>
 
 <!-- ── Notif Settings Panel ── -->
@@ -1292,6 +1301,8 @@ async function startPinFlow(u) {
 }
 
 function showPinScreen() {
+  document.getElementById('loginScreen').style.display = 'none';
+  window.scrollTo(0, 0);
   const u = pinTargetUser;
   document.getElementById('pinAvWrap').innerHTML = avatarEl(u, 72);
   document.getElementById('pinUname').textContent = u === 'george' ? 'George' : 'Olivia';
@@ -1309,8 +1320,10 @@ function backFromPin() {
   hidePinScreen();
   if (isChangingPin) {
     openProfileSheet();
+  } else {
+    document.getElementById('loginScreen').style.display = '';
+    window.scrollTo(0, 0);
   }
-  // else: login screen is already visible underneath
 }
 
 function setPinMode(mode) {
@@ -2500,6 +2513,7 @@ function checkNotifs() {
 }
 
 function showToast(ico, title, msg) {
+  if (sessionStorage.getItem('notifDismissed') === 'true') return;
   document.getElementById('toastIco').textContent = ico;
   document.getElementById('toastTitle').textContent = title;
   document.getElementById('toastMsg').textContent = msg;
@@ -2509,6 +2523,10 @@ function showToast(ico, title, msg) {
 }
 function hideToast() {
   document.getElementById('toast').classList.remove('show');
+}
+function dismissToast() {
+  hideToast();
+  sessionStorage.setItem('notifDismissed', 'true');
 }
 
 function toggleNotifs() {
