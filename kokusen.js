@@ -255,7 +255,13 @@
         // Slight punch scale
         const scale  = ph < 0.12 ? 1 + (ph / 0.12) * 0.22 : 1.22 - (ph - 0.12) * 0.18;
         const fSize  = Math.round(Math.max(46, 52 * scale));
-        const textY  = cy - 70;
+
+        // Clamp text X so the kanji never goes off either edge of the screen.
+        // Estimated half-width of two CJK chars at this font size ≈ fSize * 1.1
+        const pad    = fSize * 1.15;
+        const textX  = Math.min(Math.max(cx, pad), W - pad);
+        // Position above the tap point, but keep within top of screen
+        const textY  = Math.max(cy - 70, fSize * 0.8);
 
         g.save();
         g.globalAlpha = alpha;
@@ -269,12 +275,12 @@
         g.strokeStyle = '#ffffff';
         g.lineWidth   = 12;
         g.lineJoin    = 'round';
-        g.strokeText('黒閃', cx, textY);
+        g.strokeText('黒閃', textX, textY);
 
         // Step 2 — solid black fill painted on top (the letter itself is black)
         g.shadowBlur  = 0;
         g.fillStyle   = '#000000';
-        g.fillText('黒閃', cx, textY);
+        g.fillText('黒閃', textX, textY);
 
         g.restore();
       }
