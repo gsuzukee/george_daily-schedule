@@ -443,32 +443,34 @@ body {
 .celebrate-btn:active { opacity: 0.85; }
 
 /* ── Video Celebration Background ── */
-#videoOverlay {
-  display: none; position: fixed; inset: 0; z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
+/* videoOverlay is just a toggle wrapper — no stacking context of its own */
+#videoOverlay { display: none; }
 #videoOverlay.on { display: block; }
 #celebVideo {
+  /* z-index:1 — sits at the back, behind page content */
   position: fixed;
   top: 50%; left: 50%;
-  /* Rotate landscape video to fill portrait screen edge-to-edge */
   width: 100vh; height: 100vw;
   transform: translate(-50%, -50%) rotate(90deg);
-  transform-origin: center center;
   object-fit: cover;
-  opacity: 0.88;
+  z-index: 1;
+  opacity: 0.85;
   filter: saturate(1.4) contrast(1.1);
+  pointer-events: none;
   transition: opacity 1.5s ease;
 }
 #videoOverlay.fading #celebVideo { opacity: 0; }
-/* Dim all page content while celebrating so video dominates */
+/* z-index:2 — page content sits above video at 20% opacity so video shows through */
 .app.celebrating {
-  opacity: 0.18;
+  position: relative;
+  z-index: 2;
+  opacity: 0.2;
   transition: opacity 0.4s ease;
 }
+/* z-index:3 — confetti canvas injected by canvas-confetti, keep it on top */
+.app.celebrating ~ canvas { z-index: 3 !important; }
 #videoClose {
-  display: none; position: fixed; bottom: 100px; right: 16px; z-index: 3;
+  display: none; position: fixed; bottom: 100px; right: 16px; z-index: 4;
   pointer-events: auto;
   background: rgba(0,0,0,0.55); color: rgba(255,255,255,0.85);
   border: 1px solid rgba(255,255,255,0.2); border-radius: 99px;
