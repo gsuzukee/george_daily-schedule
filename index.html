@@ -1293,9 +1293,12 @@ function handlePhotoSelect(e) {
 async function startPinFlow(u) {
   pinTargetUser = u;
   isChangingPin = false;
-  const snap = await db.ref(`/users/${u}/pin`).once('value');
-  setPinMode(snap.val() ? 'verify' : 'create');
+  // Show PIN screen immediately so user isn't stuck on login screen
+  setPinMode('verify');
   showPinScreen();
+  // Then check Firebase and update mode if needed (e.g. first-time user)
+  const snap = await db.ref(`/users/${u}/pin`).once('value');
+  if (!snap.val()) setPinMode('create');
 }
 
 function showPinScreen() {
@@ -1480,12 +1483,9 @@ function openProfileSheet() {
   document.getElementById('profSheetName').textContent = user === 'george' ? 'George' : 'Olivia';
   document.getElementById('profSheetRole').textContent = user === 'george' ? 'Uber Eats AE' : 'Stripe SWE';
   document.getElementById('profileOverlay').classList.add('on');
-  document.body.style.overflow = 'hidden';
-  window.scrollTo(0, 0);
 }
 function closeProfileSheet() {
   document.getElementById('profileOverlay').classList.remove('on');
-  document.body.style.overflow = '';
 }
 function maybeCloseProfileSheet(e) {
   if (e.target === document.getElementById('profileOverlay')) closeProfileSheet();
