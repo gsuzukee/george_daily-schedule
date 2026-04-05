@@ -1267,6 +1267,9 @@ let todayKey = estDateKey();
 let fbOff = null;
 let qpShown = false;
 let weekPlan = {};
+// Per-template progress cache — keyed by dayType, value = checks object
+// Allows switching templates without losing progress on any of them
+let templateProgress = {};
 let profilePics = { george: null, olivia: null };
 
 // ── PIN state ──
@@ -1573,11 +1576,21 @@ function attachFirebase() {
     const d = snap.val();
     if (d) {
       if (d.dayType) { dayType = d.dayType; applyStanceColor(dayType); }
-      checks = d.tasks ? {...d.tasks} : {};
+      // Restore per-template progress cache from Firebase
+      templateProgress = d.templateProgress ? {...d.templateProgress} : {};
+      // Active template's checks come from templateProgress (source of truth)
+      checks = templateProgress[dayType]
+        ? {...templateProgress[dayType]}
+        : (d.tasks ? {...d.tasks} : {});
+      // Backfill: if no templateProgress entry yet, seed it from legacy tasks field
+      if (!templateProgress[dayType] && d.tasks) {
+        templateProgress[dayType] = {...d.tasks};
+      }
       renderToday();
     } else {
       // No data saved for today — show Quick Pick on first load
       checks = {};
+      templateProgress = {};
       renderToday();
       if (!qpShown) {
         qpShown = true;
@@ -1814,8 +1827,10 @@ function pickFromQP(key) {
   _rikaShowingAll = false;
   _rikaEntrySaved = false;
   applyStanceColor(key);
+  // Persist current template's progress before switching
+  templateProgress[dayType] = {...checks};
   dayType = key;
-  checks = {};
+  checks = templateProgress[key] ? {...templateProgress[key]} : {};
   expanded = {};
   closeQP();
   save();
@@ -1831,8 +1846,11 @@ function save() {
   const tasks = S[dayType];
   const done = Object.values(checks).filter(Boolean).length;
   const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+  // Keep templateProgress in sync with the active template's current checks
+  templateProgress[dayType] = {...checks};
   refToday(user).set({
     dayType, tasks: checks, percentage: pct,
+    templateProgress,
     updatedAt: firebase.database.ServerValue.TIMESTAMP
   }).then(() => {
     updateStreak(user);
@@ -1851,10 +1869,14 @@ function renderToday() {
 }
 
 function pickDay(key) {
+  if (key === dayType) return; // already active
   applyStanceColor(key);
   saveRikaEntry(user, key, false);
+  // Persist current template's progress before switching
+  templateProgress[dayType] = {...checks};
+  // Switch to new template, restoring its saved progress (or empty if first time)
   dayType = key;
-  checks = {};
+  checks = templateProgress[key] ? {...templateProgress[key]} : {};
   expanded = {};
   save();
   renderToday();
