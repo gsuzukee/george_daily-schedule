@@ -1809,8 +1809,12 @@ function toggleCheck(e, i) {
   const wasChecked = !!checks[i];
   checks[i] = !checks[i];
   if (!wasChecked) {
-    // Checking → Black Flash
-    triggerBlackFlash(e.currentTarget);
+    // Checking → Kokusen
+    if (typeof triggerKokusen === 'function') {
+      triggerKokusen(e.currentTarget);
+    } else {
+      triggerBlackFlash(e.currentTarget);
+    }
   } else {
     // Unchecking — if celebration is active, stop it immediately
     if (document.getElementById('videoOverlay').classList.contains('on')) {
@@ -2560,5 +2564,6 @@ if (sessionUser) {
   renderRules();
 }
 </script>
+<script src="kokusen.js"></script>
 </body>
 </html>
