@@ -263,23 +263,24 @@
         g.textAlign   = 'center';
         g.textBaseline = 'middle';
 
-        // Layer 1 — wide red glow halo
-        g.shadowColor = '#ff0000';
-        g.shadowBlur  = 28;
-        g.fillStyle   = '#cc0000';
-        g.fillText('黒閃', cx, textY);
-
-        // Layer 2 — white fill
+        // Layer 1 — wide white glow halo (makes letters stand out)
         g.shadowColor = '#ffffff';
-        g.shadowBlur  = 12;
-        g.fillStyle   = '#ffffff';
-        g.fillText('黒閃', cx, textY);
-
-        // Layer 3 — black stroke outline
-        g.strokeStyle  = '#000000';
-        g.lineWidth    = 2.5;
-        g.shadowBlur   = 0;
+        g.shadowBlur  = 32;
+        g.strokeStyle = '#ffffff';
+        g.lineWidth   = 6;
         g.strokeText('黒閃', cx, textY);
+
+        // Layer 2 — red inner glow
+        g.shadowColor = '#ff0000';
+        g.shadowBlur  = 14;
+        g.strokeStyle = '#cc0000';
+        g.lineWidth   = 3;
+        g.strokeText('黒閃', cx, textY);
+
+        // Layer 3 — black fill (the actual letter colour)
+        g.shadowBlur  = 0;
+        g.fillStyle   = '#000000';
+        g.fillText('黒閃', cx, textY);
 
         g.restore();
       }
