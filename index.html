@@ -633,7 +633,10 @@ body {
 
 /* ─── Particle Canvas ─── */
 #particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; opacity:0.4; }
-body > *:not(#particles) { position:relative; z-index:1; }
+/* Only give z-index:1 to the three main page layers — NOT to fixed overlays.
+   The old selector (body > *:not(#particles)) had specificity (1,0,1) which
+   overrode position:fixed on .overlay and .notif-panel, breaking them. */
+#loginScreen, #pinScreen, #app { position:relative; z-index:1; }
 
 /* ─── Black Flash ─── */
 .check-btn-wrap { position:relative; display:inline-flex; align-items:center; justify-content:center; }
