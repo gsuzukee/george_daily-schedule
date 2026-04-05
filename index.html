@@ -1201,6 +1201,26 @@ const DECISION = [
   {l:"Weekends:",v:"No set schedule. Bed by 1:30 AM, up by 10 AM. Sunday: back to weekday."},
 ];
 
+// ── EST/EDT timezone helpers ──
+// All time-sensitive logic in this app runs on US Eastern time so that
+// todayKey, notification triggers, day-of-week checks and greetings are
+// correct regardless of what timezone the user's device is set to.
+function estNow() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date());
+  const p = t => parseInt(parts.find(x => x.type === t).value, 10);
+  // Build a plain Date whose .getHours()/.getDay() etc. reflect ET
+  return new Date(p('year'), p('month') - 1, p('day'), p('hour'), p('minute'), p('second'));
+}
+function estDateKey(d) {
+  d = d || estNow();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 // ── State ──
 let user = null;
 let dayType = 'earlyNormal';
@@ -1209,7 +1229,7 @@ let expanded = {};
 let activeTab = 'today';
 let chartInst = null;
 let range = '1W';
-let todayKey = new Date().toISOString().split('T')[0];
+let todayKey = estDateKey();
 let fbOff = null;
 let qpShown = false;
 let weekPlan = {};
@@ -1630,16 +1650,16 @@ function renderStreakCards() {
 
 // ── Quick Pick ──
 function greeting() {
-  const h = new Date().getHours();
+  const h = estNow().getHours();
   if (h < 12) return 'Good morning';
   if (h < 18) return 'Good afternoon';
   return 'Good evening';
 }
 
-function isFriday()         { return new Date().getDay() === 5; }
-function isSaturday()       { return new Date().getDay() === 6; }
-function isSunday()         { return new Date().getDay() === 0; }
-function isSundayEvening()  { return isSunday() && new Date().getHours() >= 18; }
+function isFriday()         { return estNow().getDay() === 5; }
+function isSaturday()       { return estNow().getDay() === 6; }
+function isSunday()         { return estNow().getDay() === 0; }
+function isSundayEvening()  { return isSunday() && estNow().getHours() >= 18; }
 function isWeekend()        { return isSaturday() || isSunday(); }
 
 function showQuickPick() {
@@ -2101,13 +2121,13 @@ function getRikaHistory(u) {
 
 function saveRikaEntry(u, selectedType, wasOverride) {
   const hist = getRikaHistory(u);
-  hist.push({ userId:u, date:todayKey, dayOfWeek:new Date().getDay(), selectedType, wasOverride });
+  hist.push({ userId:u, date:todayKey, dayOfWeek:estNow().getDay(), selectedType, wasOverride });
   localStorage.setItem(RIKA_KEY(u), JSON.stringify(hist.slice(-120)));
 }
 
 function getRikaSuggestion(u) {
   const hist = getRikaHistory(u);
-  const dow = new Date().getDay();
+  const dow = estNow().getDay();
   const same = hist.filter(h => h.dayOfWeek === dow);
   if (same.length < 3) return null;
 
@@ -2505,7 +2525,7 @@ function stopNotifInterval() {
 
 function checkNotifs() {
   if (!notifsEnabled || !user) return;
-  const now = new Date();
+  const now = estNow();
   const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   const schedule = [...(NOTIF_SCHEDULE[dayType] || []), ...NOTIF_UNIVERSAL];
   for (const n of schedule) {
